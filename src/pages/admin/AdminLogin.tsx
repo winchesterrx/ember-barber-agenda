@@ -20,7 +20,6 @@ const AdminLogin = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Clear error when typing
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -73,11 +72,8 @@ const AdminLogin = () => {
       } else {
         setErrors(prev => ({ ...prev, general: result.message || 'Email ou senha incorretos' }));
       }
-   } catch (error) {
-  console.error('Erro detalhado no login:', error);
-  setErrors(prev => ({ ...prev, general: 'Erro ao fazer login. Tente novamente.' }));
-}
-
+    } catch (error) {
+      setErrors(prev => ({ ...prev, general: 'Erro ao fazer login. Tente novamente.' }));
     } finally {
       setLoading(false);
     }
