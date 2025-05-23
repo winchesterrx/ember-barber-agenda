@@ -1,4 +1,6 @@
 
+import { User, Star } from 'lucide-react';
+
 interface Barber {
   id: number;
   name: string;
@@ -10,24 +12,25 @@ interface BarberSelectionProps {
   onSelect: (barber: Barber) => void;
 }
 
+// Example data - in a real application this would come from an API
 const barbers: Barber[] = [
   {
     id: 1,
-    name: 'Marcio Silva',
-    photo: 'https://images.unsplash.com/photo-1581092795360-fd1ca04f0952',
-    experience: '7 anos de experiência'
-  },
-  {
-    id: 2,
-    name: 'Ricardo Gomes',
-    photo: 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d',
+    name: 'João Silva',
+    photo: '/images/barber1.jpg',
     experience: '5 anos de experiência'
   },
   {
+    id: 2,
+    name: 'Miguel Santos',
+    photo: '/images/barber2.jpg',
+    experience: '8 anos de experiência'
+  },
+  {
     id: 3,
-    name: 'André Souza',
-    photo: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
-    experience: '4 anos de experiência'
+    name: 'Carlos Oliveira',
+    photo: '/images/barber3.jpg',
+    experience: '3 anos de experiência'
   }
 ];
 
@@ -36,25 +39,44 @@ const BarberSelection = ({ onSelect }: BarberSelectionProps) => {
     <div className="booking-step">
       <h2 className="text-2xl font-semibold mb-6">Escolha o barbeiro</h2>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {barbers.map((barber) => (
           <div 
             key={barber.id} 
-            className="bg-barber-gray border border-barber-light-gray rounded-lg overflow-hidden cursor-pointer hover:border-barber-orange transition-colors"
+            className="bg-barber-dark border border-barber-light-gray rounded-lg p-6 cursor-pointer hover:border-barber-orange transition-colors"
             onClick={() => onSelect(barber)}
             data-barber-id={barber.id}
-            name="barber"
           >
-            <div className="aspect-[1/1] overflow-hidden">
-              <img 
-                src={barber.photo} 
-                alt={barber.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="p-4 text-center">
-              <h3 className="text-lg font-semibold mb-1">{barber.name}</h3>
-              <p className="text-barber-orange text-sm">{barber.experience}</p>
+            <div className="flex flex-col items-center text-center">
+              <div className="w-32 h-32 rounded-full bg-barber-gray mb-4 overflow-hidden">
+                {barber.photo ? (
+                  <img 
+                    src={barber.photo} 
+                    alt={barber.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = '';
+                      e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center');
+                      e.currentTarget.parentElement?.appendChild(
+                        Object.assign(document.createElement('div'), { 
+                          className: 'flex items-center justify-center',
+                          innerHTML: '<span class="text-barber-orange"><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>'
+                        })
+                      );
+                      e.currentTarget.remove();
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User className="w-16 h-16 text-barber-orange" />
+                  </div>
+                )}
+              </div>
+              <h3 className="text-xl font-semibold mb-1">{barber.name}</h3>
+              <div className="flex items-center text-sm text-gray-300 mb-2">
+                <Star className="w-4 h-4 mr-1 text-barber-orange" />
+                <span>{barber.experience}</span>
+              </div>
             </div>
           </div>
         ))}

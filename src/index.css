@@ -62,15 +62,15 @@
   }
   
   .btn-primary {
-    @apply bg-barber-orange text-white px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity;
+    @apply bg-barber-orange text-white px-6 py-3 rounded-md font-medium hover:opacity-90 transition-all shadow-md hover:-translate-y-0.5;
   }
   
   .btn-secondary {
-    @apply bg-barber-gray text-white px-6 py-3 rounded-md font-medium hover:opacity-90 transition-opacity;
+    @apply bg-barber-gray text-white px-6 py-3 rounded-md font-medium hover:opacity-90 transition-all shadow-md hover:-translate-y-0.5;
   }
   
   .card {
-    @apply bg-barber-gray rounded-lg p-5 shadow-lg;
+    @apply bg-barber-gray rounded-lg p-5 shadow-lg border border-barber-light-gray;
   }
   
   .input-field {
@@ -78,7 +78,7 @@
   }
   
   .booking-step {
-    @apply flex flex-col gap-6 p-4 md:p-8;
+    @apply flex flex-col gap-6 p-4 md:p-6;
   }
 }
 
@@ -90,6 +90,27 @@
   @apply bg-barber-orange h-full;
 }
 
+.animate-progress {
+  @apply animate-[progress_2s_ease-in-out];
+}
+
 .floating-button {
-  @apply fixed bottom-6 right-6 bg-barber-orange text-white p-4 rounded-full shadow-lg z-50 hover:opacity-90 transition-opacity;
+  @apply fixed bottom-6 right-6 bg-barber-orange text-white p-4 rounded-full shadow-lg z-50 hover:opacity-90 transition-all;
+}
+
+/* Custom gradient and shadow styles */
+.shadow-custom {
+  box-shadow: 0 4px 20px rgba(255, 127, 0, 0.15);
+}
+
+.gradient-overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(18,18,18,1));
+}
+
+.hover-card {
+  @apply transition-transform duration-300;
+}
+
+.hover-card:hover {
+  @apply transform -translate-y-1;
 }

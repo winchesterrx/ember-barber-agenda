@@ -107,6 +107,11 @@ const Booking = () => {
 
   return (
     <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
+      <div className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]" 
+           style={{ backgroundImage: "url('/images/barber-shop-interior.jpg')" }}>
+        <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+      </div>
+      
       <Navbar />
       
       <main className="flex-grow container mx-auto py-8 px-4">
@@ -115,18 +120,24 @@ const Booking = () => {
         <BookingSteps currentStep={currentStep} />
         
         <div className="mt-8 max-w-4xl mx-auto">
-          {renderStepContent()}
+          <div className="bg-barber-gray bg-opacity-90 rounded-lg p-6 shadow-lg border border-barber-light-gray">
+            {renderStepContent()}
+            
+            {currentStep > 1 && (
+              <div className="mt-8 flex justify-start">
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="text-barber-orange hover:underline hover:text-opacity-90 transition-colors btn-back"
+                >
+                  ← Voltar para etapa anterior
+                </button>
+              </div>
+            )}
+          </div>
           
-          {currentStep > 1 && (
-            <div className="mt-8 flex justify-start">
-              <button
-                type="button"
-                onClick={handleBack}
-                className="text-barber-orange hover:underline"
-              >
-                ← Voltar para etapa anterior
-              </button>
-            </div>
+          {currentStep < 5 && (
+            <div className="bg-gradient-to-b from-barber-gray to-barber-dark h-4 mt-6 rounded-b-lg mx-auto max-w-4xl"></div>
           )}
         </div>
       </main>
