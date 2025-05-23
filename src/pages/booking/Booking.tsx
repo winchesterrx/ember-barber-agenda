@@ -85,29 +85,18 @@ const Booking = () => {
       headers: {
         'Content-Type': 'application/json'
       },
-     body: JSON.stringify({
-  customer: updatedBooking.customer,
-  service: {
-    name: updatedBooking.service?.name
-  },
-  barber: {
-    name: updatedBooking.barber?.name
-  },
-  date: updatedBooking.date?.toISOString(),
-  time: updatedBooking.time
-})
-body: JSON.stringify({
-  customer: updatedBooking.customer,
-  service: {
-    name: updatedBooking.service?.name
-  },
-  barber: {
-    name: updatedBooking.barber?.name
-  },
-  date: updatedBooking.date?.toISOString(),
-  time: updatedBooking.time
-})
-
+      body: JSON.stringify({
+        customer: updatedBooking.customer,
+        service: {
+          name: updatedBooking.service?.name
+        },
+        barber: {
+          name: updatedBooking.barber?.name
+        },
+        date: updatedBooking.date?.toISOString(),
+        time: updatedBooking.time
+      })
+    })
       .then(response => response.json())
       .then(() => {
         const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
