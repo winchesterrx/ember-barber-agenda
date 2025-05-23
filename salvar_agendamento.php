@@ -2,42 +2,66 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+// ---------------------
+// Configurações de CORS
+// ---------------------
 header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
-// Recebe o corpo cru da requisição
-$json = file_get_contents("php://input");
-$data = json_decode($json, true);
+// Tratar requisições OPTIONS (pré-flight)
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
-// Se falhar ao interpretar o JSON, exibe erro e o conteúdo recebido
-if (!$data) {
+// ---------------------
+// Ler e validar JSON recebido
+// ---------------------
+$input = file_get_contents("php://input");
+
+if (!$input) {
     echo json_encode([
         "success" => false,
-        "message" => "JSON inválido ou não recebido",
-        "raw" => $json // Aqui você vê o que chegou
+        "message" => "Nenhum corpo de requisição recebido.",
+        "raw" => ""
     ]);
     exit;
 }
 
-// Dados do banco
-$host = 'localhost';
+$data = json_decode($input, true);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    echo json_encode([
+        "success" => false,
+        "message" => "JSON inválido ou não recebido",
+        "raw" => $input
+    ]);
+    exit;
+}
+
+// ---------------------
+// Conectar ao banco de dados
+// ---------------------
+$host = 'localhost'; // ou auth-db1077.hstgr.io se estiver externo
 $dbname = 'u578036672_bancoprojetos';
 $username = 'u578036672_bancoprojetos';
 $password = 'M4theus@123';
 
-// Conexão
 $conn = new mysqli($host, $username, $password, $dbname);
 
-// Verifica conexão
 if ($conn->connect_error) {
     echo json_encode([
         "success" => false,
-        "message" => "Erro ao conectar ao banco de dados: " . $conn->connect_error
+        "message" => "Erro na conexão com o banco de dados: " . $conn->connect_error
     ]);
     exit;
 }
 
-// Escapar dados
+// ---------------------
+// Preparar dados para inserção
+// ---------------------
 $cliente = $conn->real_escape_string($data["customer"]["name"]);
 $whatsapp = $conn->real_escape_string($data["customer"]["whatsapp"]);
 $cpf = $conn->real_escape_string($data["customer"]["cpf"]);
@@ -46,14 +70,22 @@ $barbeiro = $conn->real_escape_string($data["barber"]["name"]);
 $data_agendamento = $conn->real_escape_string($data["date"]);
 $hora = $conn->real_escape_string($data["time"]);
 
-// Inserir dados
-$sql = "INSERT INTO agendamentos (nome_cliente, telefone, cpf, servico, barbeiro, data, horario)
+// ---------------------
+// Inserir dados na tabela
+// ---------------------
+$sql = "INSERT INTO agendamentos (nome_cliente, telefone, cpf, servico, barbeiro, data, horario) 
         VALUES ('$cliente', '$whatsapp', '$cpf', '$servico', '$barbeiro', '$data_agendamento', '$hora')";
 
 if ($conn->query($sql) === TRUE) {
-    echo json_encode(["success" => true, "message" => "Agendamento salvo com sucesso!"]);
+    echo json_encode([
+        "success" => true,
+        "message" => "Agendamento salvo com sucesso!"
+    ]);
 } else {
-    echo json_encode(["success" => false, "message" => "Erro ao salvar: " . $conn->error]);
+    echo json_encode([
+        "success" => false,
+        "message" => "Erro ao salvar: " . $conn->error
+    ]);
 }
 
 $conn->close();
