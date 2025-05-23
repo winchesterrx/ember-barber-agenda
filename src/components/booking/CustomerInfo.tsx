@@ -187,7 +187,7 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
           <div className="pt-4">
             <Button
               type="submit"
-              className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-3 rounded-md font-medium w-full"
+              className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-3 rounded-md font-medium w-full btn-finalizar"
             >
               Finalizar agendamento
             </Button>

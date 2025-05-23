@@ -31,7 +31,7 @@ const BookingSuccess = () => {
     // Simulate loading
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000);
+    }, 1000);
     
     return () => clearTimeout(loadingTimer);
   }, [booking, navigate, toast]);
@@ -43,6 +43,7 @@ const BookingSuccess = () => {
         setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(intervalId);
+            // Open WhatsApp automatically when countdown reaches 0
             window.open(getWhatsAppLink(), '_blank');
             return 0;
           }
@@ -58,21 +59,23 @@ const BookingSuccess = () => {
   }, [isLoading]);
 
   // Format date for WhatsApp message
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | null) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('pt-BR');
   };
 
   const getWhatsAppLink = () => {
+    if (!booking) return '';
+    
     // We're using the phone number provided in the requirements
     const barberPhone = "5517997799982";
     
     const message = `Olá! Novo agendamento confirmado pelo Magic Barber:
-🧔 Cliente: ${booking?.customer.name}
-✂️ Serviço: ${booking?.service?.name}
-📅 Data: ${formatDate(booking?.date)}
-⏰ Horário: ${booking?.time}
-💰 Valor: R$ ${booking?.service?.price.toFixed(2)}`;
+🧔 Cliente: ${booking.customer.name}
+✂️ Serviço: ${booking.service?.name}
+📅 Data: ${formatDate(booking.date)}
+⏰ Horário: ${booking.time}
+💰 Valor: R$ ${booking.service?.price.toFixed(2)}`;
     
     return `https://wa.me/${barberPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -80,7 +83,7 @@ const BookingSuccess = () => {
   return (
     <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
       <div className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]" 
-           style={{ backgroundImage: "url('/images/barber-background.jpg')" }}>
+           style={{ backgroundImage: "url('/images/barber-shop-interior.jpg')" }}>
         <div className="absolute inset-0 bg-black bg-opacity-70"></div>
       </div>
       
@@ -144,7 +147,7 @@ const BookingSuccess = () => {
                   to="/"
                   className="bg-barber-gray border border-barber-orange text-barber-orange hover:bg-barber-light-gray transition-colors px-6 py-3 rounded-md flex items-center justify-center gap-2 shadow-md btn-cancel"
                 >
-                  Cancelar
+                  Início
                 </Link>
                 <a 
                   href={getWhatsAppLink()}

@@ -83,7 +83,6 @@ const Booking = () => {
     // Save complete booking data
     setBookingData(updatedBooking);
     
-    // In a real application, here we would send the data to the backend
     // Navigate to success page with booking data
     navigate('/agendamento/sucesso', { 
       state: { 
