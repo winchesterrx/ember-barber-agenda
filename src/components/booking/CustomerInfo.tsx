@@ -1,11 +1,16 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 interface CustomerInfoProps {
   onSubmit: (data: { name: string; whatsapp: string; cpf: string }) => void;
 }
 
 const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     whatsapp: '',
@@ -111,7 +116,15 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
     e.preventDefault();
     
     if (validateForm()) {
+      // Pass the data to parent component
       onSubmit(formData);
+      
+      // Show toast notification
+      toast({
+        title: "Dados confirmados!",
+        description: "Redirecionando para finalizar agendamento...",
+        variant: "default",
+      });
     }
   };
 
@@ -172,12 +185,12 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
           </div>
           
           <div className="pt-4">
-            <button
+            <Button
               type="submit"
               className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-3 rounded-md font-medium w-full"
             >
               Finalizar agendamento
-            </button>
+            </Button>
           </div>
         </div>
       </form>

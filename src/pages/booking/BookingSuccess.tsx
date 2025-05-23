@@ -5,10 +5,12 @@ import { CheckCircle, Send } from 'lucide-react';
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 
 const BookingSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [progress, setProgress] = useState(0);
@@ -17,6 +19,11 @@ const BookingSuccess = () => {
   useEffect(() => {
     // If no booking data, redirect to booking page
     if (!booking) {
+      toast({
+        title: "Erro",
+        description: "Dados de agendamento não encontrados. Inicie um novo agendamento.",
+        variant: "destructive",
+      });
       navigate('/agendar');
       return;
     }
@@ -27,7 +34,7 @@ const BookingSuccess = () => {
     }, 2000);
     
     return () => clearTimeout(loadingTimer);
-  }, [booking, navigate]);
+  }, [booking, navigate, toast]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -43,12 +50,12 @@ const BookingSuccess = () => {
         });
         
         // Update progress
-        setProgress((5 - countdown + 1) * 20);
+        setProgress(prev => prev + 20);
       }, 1000);
       
       return () => clearInterval(intervalId);
     }
-  }, [isLoading, countdown]);
+  }, [isLoading]);
 
   // Format date for WhatsApp message
   const formatDate = (date: Date) => {

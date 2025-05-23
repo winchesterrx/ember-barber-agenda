@@ -1,6 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
 
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
@@ -73,13 +74,22 @@ const Booking = () => {
   };
 
   const handleCustomerSubmit = (customerData: { name: string; whatsapp: string; cpf: string }) => {
-    setBookingData(prev => ({
-      ...prev,
+    // Update booking data with customer info
+    const updatedBooking = {
+      ...bookingData,
       customer: customerData
-    }));
+    };
+    
+    // Save complete booking data
+    setBookingData(updatedBooking);
     
     // In a real application, here we would send the data to the backend
-    navigate('/agendamento/sucesso', { state: { booking: { ...bookingData, customer: customerData } } });
+    // Navigate to success page with booking data
+    navigate('/agendamento/sucesso', { 
+      state: { 
+        booking: updatedBooking
+      } 
+    });
   };
 
   const renderStepContent = () => {
@@ -143,6 +153,7 @@ const Booking = () => {
       </main>
       
       <Footer />
+      <Toaster />
     </div>
   );
 };
