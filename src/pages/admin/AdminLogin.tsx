@@ -73,8 +73,11 @@ const AdminLogin = () => {
       } else {
         setErrors(prev => ({ ...prev, general: result.message || 'Email ou senha incorretos' }));
       }
-    } catch (error) {
-      setErrors(prev => ({ ...prev, general: 'Erro ao fazer login. Tente novamente.' }));
+   } catch (error) {
+  console.error('Erro detalhado no login:', error);
+  setErrors(prev => ({ ...prev, general: 'Erro ao fazer login. Tente novamente.' }));
+}
+
     } finally {
       setLoading(false);
     }
