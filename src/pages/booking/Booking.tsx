@@ -230,8 +230,9 @@ const Booking = () => {
           </div>
 
           {currentStep < 5 && (
-            <div className="bg-gradient-to-b from-barber-gray to-barber-dark h-4 mt-6 rounded-b-lg mx-auto max-w-4xl"></div>
-          )}
+  <div className="bg-gradient-to-b from-barber-gray to-barber-dark h-4 mt-6 rounded-b-lg mx-auto max-w-4xl"></div>
+)}
+
         </div>
       </main>
 
