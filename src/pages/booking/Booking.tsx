@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -74,20 +73,46 @@ const Booking = () => {
   };
 
   const handleCustomerSubmit = (customerData: { name: string; whatsapp: string; cpf: string }) => {
-    // Update booking data with customer info
-    const updatedBooking = {
+    const updatedBooking: BookingData = {
       ...bookingData,
       customer: customerData
     };
-    
-    // Save complete booking data
+
     setBookingData(updatedBooking);
-    
-    // Navigate to success page with booking data
-    navigate('/agendamento/sucesso', { 
-      state: { 
+
+    // Enviar os dados para o PHP
+    fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatedBooking)
+    })
+      .then(response => response.json())
+      .then(() => {
+        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
+        const msg = `Novo agendamento confirmado! ✂️
+
+👤 Cliente: ${updatedBooking.customer.name}
+📞 WhatsApp: ${updatedBooking.customer.whatsapp}
+💈 Serviço: ${updatedBooking.service?.name}
+✂️ Barbeiro: ${updatedBooking.barber?.name}
+📅 Data: ${dataFormatada}
+⏰ Horário: ${updatedBooking.time}`;
+
+        const link = `https://wa.me/5517997799982?text=${encodeURIComponent(msg)}`;
+        window.location.href = link;
+      })
+      .catch(error => {
+        console.error("Erro ao salvar o agendamento:", error);
+        alert("Houve um erro ao processar seu agendamento. Tente novamente.");
+      });
+
+    // (Opcional) navegar para página de sucesso
+    navigate('/agendamento/sucesso', {
+      state: {
         booking: updatedBooking
-      } 
+      }
     });
   };
 
@@ -100,7 +125,14 @@ const Booking = () => {
       case 3:
         return <DateSelection onSelect={handleDateSelect} />;
       case 4:
-        return <TimeSelection onSelect={handleTimeSelect} serviceId={bookingData.service?.id || 0} barberId={bookingData.barber?.id || 0} date={bookingData.date} />;
+        return (
+          <TimeSelection
+            onSelect={handleTimeSelect}
+            serviceId={bookingData.service?.id || 0}
+            barberId={bookingData.barber?.id || 0}
+            date={bookingData.date}
+          />
+        );
       case 5:
         return <CustomerInfo onSubmit={handleCustomerSubmit} />;
       default:
@@ -116,22 +148,22 @@ const Booking = () => {
 
   return (
     <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
-      <div className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]" 
+      <div className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]"
            style={{ backgroundImage: "url('/images/barber-shop-interior.jpg')" }}>
         <div className="absolute inset-0 bg-black bg-opacity-70"></div>
       </div>
-      
+
       <Navbar />
-      
+
       <main className="flex-grow container mx-auto py-8 px-4">
         <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Agendar Serviço</h1>
-        
+
         <BookingSteps currentStep={currentStep} />
-        
+
         <div className="mt-8 max-w-4xl mx-auto">
           <div className="bg-barber-gray bg-opacity-90 rounded-lg p-6 shadow-lg border border-barber-light-gray">
             {renderStepContent()}
-            
+
             {currentStep > 1 && (
               <div className="mt-8 flex justify-start">
                 <button
@@ -144,13 +176,13 @@ const Booking = () => {
               </div>
             )}
           </div>
-          
+
           {currentStep < 5 && (
             <div className="bg-gradient-to-b from-barber-gray to-barber-dark h-4 mt-6 rounded-b-lg mx-auto max-w-4xl"></div>
           )}
         </div>
       </main>
-      
+
       <Footer />
       <Toaster />
     </div>
