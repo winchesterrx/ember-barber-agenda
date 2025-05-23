@@ -1,5 +1,5 @@
 
-import { Scissors, Beard, Clock, Spray, Sparkles } from 'lucide-react';
+import { Scissors, ScissorsLineDashed, Clock, Droplets, Sparkles } from 'lucide-react';
 
 interface Service {
   id: number;
@@ -29,7 +29,7 @@ const services: Service[] = [
     description: 'Modelagem e hidratação completa',
     price: 30,
     duration: 30,
-    icon: <Beard className="w-8 h-8" />
+    icon: <ScissorsLineDashed className="w-8 h-8" />
   },
   {
     id: 3,
@@ -45,7 +45,7 @@ const services: Service[] = [
     description: 'Coloração profissional e durável',
     price: 70,
     duration: 90,
-    icon: <Spray className="w-8 h-8" />
+    icon: <Droplets className="w-8 h-8" />
   }
 ];
 
@@ -61,7 +61,6 @@ const ServiceSelection = ({ onSelect }: ServiceSelectionProps) => {
             className="bg-barber-gray border border-barber-light-gray rounded-lg p-6 cursor-pointer hover:border-barber-orange transition-colors"
             onClick={() => onSelect(service)}
             data-service-id={service.id}
-            name="service"
           >
             <div className="flex items-start gap-4">
               <div className="p-3 bg-barber-orange bg-opacity-10 rounded-lg">

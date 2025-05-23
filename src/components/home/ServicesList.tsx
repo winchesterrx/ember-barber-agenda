@@ -1,5 +1,5 @@
 
-import { Scissors, Beard, Clock, Spray, Sparkles } from 'lucide-react';
+import { Scissors, ScissorsLineDashed, Clock, Droplets, Sparkles } from 'lucide-react';
 
 interface Service {
   id: number;
@@ -25,7 +25,7 @@ const services: Service[] = [
     description: 'Modelagem e hidratação completa',
     price: 30,
     duration: 30,
-    icon: <Beard className="w-8 h-8 text-barber-orange" />
+    icon: <ScissorsLineDashed className="w-8 h-8 text-barber-orange" />
   },
   {
     id: 3,
@@ -41,7 +41,7 @@ const services: Service[] = [
     description: 'Coloração profissional e durável',
     price: 70,
     duration: 90,
-    icon: <Spray className="w-8 h-8 text-barber-orange" />
+    icon: <Droplets className="w-8 h-8 text-barber-orange" />
   }
 ];
 
