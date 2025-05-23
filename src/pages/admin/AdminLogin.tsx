@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
@@ -20,7 +19,7 @@ const AdminLogin = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear error when typing
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -33,7 +32,7 @@ const AdminLogin = () => {
   const validateForm = () => {
     let valid = true;
     const newErrors = { ...errors };
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
       newErrors.email = 'Email é obrigatório';
@@ -42,35 +41,37 @@ const AdminLogin = () => {
       newErrors.email = 'Email inválido';
       valid = false;
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória';
       valid = false;
     }
-    
+
     setErrors(newErrors);
     return valid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-    
     setLoading(true);
-    
-    // Simulate API call
-    // In a real application, this would be an API call to authenticate the user
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes, let's use a hardcoded credential
-      if (formData.email === 'admin@example.com' && formData.password === 'password') {
-        // Store auth token in session or local storage
-        sessionStorage.setItem('barberToken', 'demo-token');
+      const response = await fetch('https://xofome.online/barbeariamagic/login_barbeiro.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        sessionStorage.setItem('barberToken', JSON.stringify(result.barbeiro));
         navigate('/admin/dashboard');
       } else {
-        setErrors(prev => ({ ...prev, general: 'Email ou senha incorretos' }));
+        setErrors(prev => ({ ...prev, general: result.message || 'Email ou senha incorretos' }));
       }
     } catch (error) {
       setErrors(prev => ({ ...prev, general: 'Erro ao fazer login. Tente novamente.' }));
@@ -94,14 +95,14 @@ const AdminLogin = () => {
               Faça login para acessar seu painel de agendamentos
             </p>
           </div>
-          
+
           <div className="bg-barber-gray rounded-lg shadow-lg p-8 mt-8">
             {errors.general && (
               <div className="mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500 text-sm">
                 {errors.general}
               </div>
             )}
-            
+
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium mb-2">
@@ -186,18 +187,9 @@ const AdminLogin = () => {
                 </button>
               </div>
             </form>
-            
-            <div className="mt-6">
-              <p className="text-center text-sm text-gray-400">
-                Para fins de demonstração, use:<br />
-                Email: admin@example.com<br />
-                Senha: password
-              </p>
-            </div>
           </div>
         </div>
       </div>
-      
       <Footer />
     </div>
   );
