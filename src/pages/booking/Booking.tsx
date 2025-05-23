@@ -72,11 +72,63 @@ const Booking = () => {
     setCurrentStep(5);
   };
 
-  const handleCustomerSubmit = (customerData: { name: string; whatsapp: string; cpf: string }) => {
-    const updatedBooking: BookingData = {
-      ...bookingData,
-      customer: customerData
-    };
+ const handleCustomerSubmit = (customerData: { name: string; whatsapp: string; cpf: string }) => {
+  const updatedBooking: BookingData = {
+    ...bookingData,
+    customer: customerData
+  };
+
+  setBookingData(updatedBooking);
+
+  // Enviar os dados para o PHP
+  fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(updatedBooking)
+  })
+    .then(response => response.json())
+    .then(() => {
+      const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
+      const msg = `Novo agendamento confirmado! ✂️
+
+👤 Cliente: ${updatedBooking.customer.name}
+📞 WhatsApp: ${updatedBooking.customer.whatsapp}
+💈 Serviço: ${updatedBooking.service?.name}
+✂️ Barbeiro: ${updatedBooking.barber?.name}
+📅 Data: ${dataFormatada}
+⏰ Horário: ${updatedBooking.time}`;
+
+      const link = `https://wa.me/5517997799982?text=${encodeURIComponent(msg)}`;
+      window.location.href = link;
+
+      // Agora navega com um objeto serializável
+      const serializableBooking = {
+        service: {
+          name: updatedBooking.service?.name,
+          price: updatedBooking.service?.price
+        },
+        barber: {
+          name: updatedBooking.barber?.name
+        },
+        date: updatedBooking.date?.toISOString(),
+        time: updatedBooking.time,
+        customer: updatedBooking.customer
+      };
+
+      navigate('/agendamento/sucesso', {
+        state: {
+          booking: serializableBooking
+        }
+      });
+    })
+    .catch(error => {
+      console.error("Erro ao salvar o agendamento:", error);
+      alert("Houve um erro ao processar seu agendamento. Tente novamente.");
+    });
+};
+
 
     setBookingData(updatedBooking);
 
