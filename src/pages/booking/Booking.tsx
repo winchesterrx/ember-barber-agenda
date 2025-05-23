@@ -80,40 +80,54 @@ const Booking = () => {
 
     setBookingData(updatedBooking);
 
-    // Enviar os dados para o PHP
     fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(updatedBooking)
+      body: JSON.stringify({
+        customer: updatedBooking.customer,
+        service: {
+          name: updatedBooking.service?.name
+        },
+        barber: {
+          name: updatedBooking.barber?.name
+        },
+        date: updatedBooking.date?.toISOString(),
+        time: updatedBooking.time
+      })
     })
       .then(response => response.json())
       .then(() => {
         const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
-        const msg = `Novo agendamento confirmado! ✂️
-
-👤 Cliente: ${updatedBooking.customer.name}
-📞 WhatsApp: ${updatedBooking.customer.whatsapp}
-💈 Serviço: ${updatedBooking.service?.name}
-✂️ Barbeiro: ${updatedBooking.barber?.name}
-📅 Data: ${dataFormatada}
-⏰ Horário: ${updatedBooking.time}`;
+        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.name}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
 
         const link = `https://wa.me/5517997799982?text=${encodeURIComponent(msg)}`;
         window.location.href = link;
+
+        const serializableBooking = {
+          service: {
+            name: updatedBooking.service?.name,
+            price: updatedBooking.service?.price
+          },
+          barber: {
+            name: updatedBooking.barber?.name
+          },
+          date: updatedBooking.date?.toISOString(),
+          time: updatedBooking.time,
+          customer: updatedBooking.customer
+        };
+
+        navigate('/agendamento/sucesso', {
+          state: {
+            booking: serializableBooking
+          }
+        });
       })
       .catch(error => {
         console.error("Erro ao salvar o agendamento:", error);
         alert("Houve um erro ao processar seu agendamento. Tente novamente.");
       });
-
-    // (Opcional) navegar para página de sucesso
-    navigate('/agendamento/sucesso', {
-      state: {
-        booking: updatedBooking
-      }
-    });
   };
 
   const renderStepContent = () => {
@@ -148,8 +162,10 @@ const Booking = () => {
 
   return (
     <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
-      <div className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]"
-           style={{ backgroundImage: "url('/images/barber-shop-interior.jpg')" }}>
+      <div
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]"
+        style={{ backgroundImage: "url('/images/barber-shop-interior.jpg')" }}
+      >
         <div className="absolute inset-0 bg-black bg-opacity-70"></div>
       </div>
 
