@@ -1,0 +1,139 @@
+
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import Navbar from '@/components/shared/Navbar';
+import Footer from '@/components/shared/Footer';
+import BookingSteps from '@/components/booking/BookingSteps';
+import ServiceSelection from '@/components/booking/ServiceSelection';
+import BarberSelection from '@/components/booking/BarberSelection';
+import DateSelection from '@/components/booking/DateSelection';
+import TimeSelection from '@/components/booking/TimeSelection';
+import CustomerInfo from '@/components/booking/CustomerInfo';
+
+interface Service {
+  id: number;
+  name: string;
+  price: number;
+  duration: number;
+}
+
+interface Barber {
+  id: number;
+  name: string;
+  photo: string;
+  experience: string;
+}
+
+interface BookingData {
+  service: Service | null;
+  barber: Barber | null;
+  date: Date | null;
+  time: string | null;
+  customer: {
+    name: string;
+    whatsapp: string;
+    cpf: string;
+  };
+}
+
+const Booking = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [bookingData, setBookingData] = useState<BookingData>({
+    service: null,
+    barber: null,
+    date: null,
+    time: null,
+    customer: {
+      name: '',
+      whatsapp: '',
+      cpf: ''
+    }
+  });
+
+  const handleServiceSelect = (service: Service) => {
+    setBookingData(prev => ({ ...prev, service }));
+    setCurrentStep(2);
+  };
+
+  const handleBarberSelect = (barber: Barber) => {
+    setBookingData(prev => ({ ...prev, barber }));
+    setCurrentStep(3);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setBookingData(prev => ({ ...prev, date }));
+    setCurrentStep(4);
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setBookingData(prev => ({ ...prev, time }));
+    setCurrentStep(5);
+  };
+
+  const handleCustomerSubmit = (customerData: { name: string; whatsapp: string; cpf: string }) => {
+    setBookingData(prev => ({
+      ...prev,
+      customer: customerData
+    }));
+    
+    // In a real application, here we would send the data to the backend
+    navigate('/agendamento/sucesso', { state: { booking: { ...bookingData, customer: customerData } } });
+  };
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return <ServiceSelection onSelect={handleServiceSelect} />;
+      case 2:
+        return <BarberSelection onSelect={handleBarberSelect} />;
+      case 3:
+        return <DateSelection onSelect={handleDateSelect} />;
+      case 4:
+        return <TimeSelection onSelect={handleTimeSelect} serviceId={bookingData.service?.id || 0} barberId={bookingData.barber?.id || 0} date={bookingData.date} />;
+      case 5:
+        return <CustomerInfo onSubmit={handleCustomerSubmit} />;
+      default:
+        return null;
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
+      <Navbar />
+      
+      <main className="flex-grow container mx-auto py-8 px-4">
+        <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Agendar Serviço</h1>
+        
+        <BookingSteps currentStep={currentStep} />
+        
+        <div className="mt-8 max-w-4xl mx-auto">
+          {renderStepContent()}
+          
+          {currentStep > 1 && (
+            <div className="mt-8 flex justify-start">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="text-barber-orange hover:underline"
+              >
+                ← Voltar para etapa anterior
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
+      
+      <Footer />
+    </div>
+  );
+};
+
+export default Booking;
