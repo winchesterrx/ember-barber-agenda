@@ -80,23 +80,24 @@ const Booking = () => {
 
     setBookingData(updatedBooking);
 
-    fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        customer: updatedBooking.customer,
-        service: {
-          name: updatedBooking.service?.name
-        },
-        barber: {
-          name: updatedBooking.barber?.name
-        },
-        date: updatedBooking.date?.toISOString(),
-        time: updatedBooking.time
-      })
-    })
+   fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    nome_cliente: updatedBooking.customer.name,
+    telefone: updatedBooking.customer.whatsapp,
+    cpf: updatedBooking.customer.cpf,
+    data: updatedBooking.date?.toISOString().split('T')[0],
+    horario: updatedBooking.time,
+    servico: updatedBooking.service?.name,
+    valor: updatedBooking.service?.price ?? 0,
+    barbeiro: updatedBooking.barber?.name,
+    id_barbeiro: updatedBooking.barber?.id
+  })
+})
+
       .then(response => response.json())
       .then(() => {
         const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
