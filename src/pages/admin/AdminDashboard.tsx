@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -6,52 +5,52 @@ import BookingCard from '@/components/admin/BookingCard';
 import DashboardStats from '@/components/admin/DashboardStats';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const generateMockBookings = () => {
-  const bookings = [];
-  const services = ['Corte de Cabelo', 'Barba', 'Combo Completo', 'Pintura'];
-  const statuses = ['pending', 'confirmed', 'cancelled'];
-  
-  // Generate today's bookings
-  for (let i = 0; i < 5; i++) {
-    const hour = 9 + i;
-    const minute = Math.random() > 0.5 ? '00' : '30';
-    const serviceIndex = Math.floor(Math.random() * services.length);
-    const statusIndex = Math.floor(Math.random() * statuses.length);
-    
-    bookings.push({
-      id: `today-${i}`,
-      customerName: `Cliente ${i + 1}`,
-      phone: `(11) 9${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
-      service: services[serviceIndex],
-      time: `${hour}:${minute}`,
-      status: statuses[statusIndex]
-    });
-  }
-  
-  return bookings;
-};
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [bookings, setBookings] = useState<any[]>([]);
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('day');
   const [loading, setLoading] = useState(true);
-  
+
+  const formatDateToYMD = (date: Date) => {
+    return date.toISOString().split('T')[0];
+  };
+
   useEffect(() => {
-    // Check if user is authenticated
     const token = sessionStorage.getItem('barberToken');
     if (!token) {
       navigate('/admin/login');
       return;
     }
-    
-    // Load bookings (simulated)
+
+    const barbeiro = JSON.parse(token);
+    const formattedDate = formatDateToYMD(currentDate);
+
     setLoading(true);
-    setTimeout(() => {
-      setBookings(generateMockBookings());
-      setLoading(false);
-    }, 1000);
+    fetch('https://xofome.online/barbeariamagic/get_agendamentos.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        barbeiro_id: barbeiro.id,
+        date: formattedDate,
+        viewMode: viewMode
+      })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setBookings(data.agendamentos);
+        } else {
+          setBookings([]);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setBookings([]);
+        setLoading(false);
+      });
   }, [navigate, currentDate, viewMode]);
 
   const formatDate = (date: Date) => {
@@ -61,35 +60,27 @@ const AdminDashboard = () => {
       year: 'numeric'
     });
   };
-  
+
   const handlePreviousDay = () => {
     const newDate = new Date(currentDate);
-    if (viewMode === 'day') {
-      newDate.setDate(newDate.getDate() - 1);
-    } else if (viewMode === 'week') {
-      newDate.setDate(newDate.getDate() - 7);
-    } else {
-      newDate.setMonth(newDate.getMonth() - 1);
-    }
+    if (viewMode === 'day') newDate.setDate(newDate.getDate() - 1);
+    else if (viewMode === 'week') newDate.setDate(newDate.getDate() - 7);
+    else newDate.setMonth(newDate.getMonth() - 1);
     setCurrentDate(newDate);
   };
-  
+
   const handleNextDay = () => {
     const newDate = new Date(currentDate);
-    if (viewMode === 'day') {
-      newDate.setDate(newDate.getDate() + 1);
-    } else if (viewMode === 'week') {
-      newDate.setDate(newDate.getDate() + 7);
-    } else {
-      newDate.setMonth(newDate.getMonth() + 1);
-    }
+    if (viewMode === 'day') newDate.setDate(newDate.getDate() + 1);
+    else if (viewMode === 'week') newDate.setDate(newDate.getDate() + 7);
+    else newDate.setMonth(newDate.getMonth() + 1);
     setCurrentDate(newDate);
   };
-  
+
   const handleToday = () => {
     setCurrentDate(new Date());
   };
-  
+
   const getViewTitle = () => {
     if (viewMode === 'day') {
       return formatDate(currentDate);
@@ -106,7 +97,7 @@ const AdminDashboard = () => {
     <AdminLayout>
       <div className="space-y-6">
         <DashboardStats />
-        
+
         <div className="bg-barber-gray rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl md:text-2xl font-semibold">Agendamentos</h2>
@@ -115,30 +106,23 @@ const AdminDashboard = () => {
                 <button
                   onClick={() => setViewMode('day')}
                   className={`px-4 py-2 rounded-lg text-sm ${viewMode === 'day' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
-                >
-                  Dia
-                </button>
+                >Dia</button>
                 <button
                   onClick={() => setViewMode('week')}
                   className={`px-4 py-2 rounded-lg text-sm ${viewMode === 'week' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
-                >
-                  Semana
-                </button>
+                >Semana</button>
                 <button
                   onClick={() => setViewMode('month')}
                   className={`px-4 py-2 rounded-lg text-sm ${viewMode === 'month' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
-                >
-                  Mês
-                </button>
+                >Mês</button>
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-between items-center mb-6 bg-barber-dark p-4 rounded-lg">
             <button onClick={handlePreviousDay} className="p-2 hover:bg-barber-gray rounded-full">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            
             <div className="flex items-center gap-3">
               <button onClick={handleToday} className="text-sm bg-barber-gray hover:bg-barber-orange transition-colors px-3 py-1 rounded">
                 Hoje
@@ -148,12 +132,11 @@ const AdminDashboard = () => {
                 {getViewTitle()}
               </h3>
             </div>
-            
             <button onClick={handleNextDay} className="p-2 hover:bg-barber-gray rounded-full">
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-          
+
           {loading ? (
             <div className="flex justify-center py-12">
               <div className="w-10 h-10 border-4 border-barber-orange border-t-transparent rounded-full animate-spin"></div>
