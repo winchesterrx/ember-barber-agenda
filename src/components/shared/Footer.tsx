@@ -13,12 +13,12 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center">
                 <MapPin className="w-5 h-5 mr-3 text-barber-orange" />
-                <span className="text-gray-300">Av. Exemplo, 123 - Centro</span>
+                <span className="text-gray-300">Rua Itacolomi, 3831 - Vila Marim, Votuporanga- SP</span>
               </li>
               <li className="flex items-center">
                 <Phone className="w-5 h-5 mr-3 text-barber-orange" />
-                <a href="tel:+5511999999999" className="text-gray-300 hover:text-barber-orange transition-colors">
-                  (11) 99999-9999
+                <a href="tel:+5517997799982" className="text-gray-300 hover:text-barber-orange transition-colors">
+                  (17) 99779-9982
                 </a>
               </li>
               <li className="flex items-center">
@@ -87,10 +87,14 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-barber-gray pt-6">
-          <p className="text-center text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Magic Barber - Todos os direitos reservados
-          </p>
-        </div>
+  <p className="text-center text-gray-500 text-sm">
+    &copy; {new Date().getFullYear()} Magic Barber - Todos os direitos reservados
+  </p>
+  <p className="text-center text-gray-500 text-sm">
+    Desenvolvido por Gabriel Silva
+  </p>
+</div>
+
       </div>
     </footer>
   );
