@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
 import BookingCard from '@/components/admin/BookingCard';
 import DashboardStats from '@/components/admin/DashboardStats';
+import ManageSchedule from '@/components/admin/ManageSchedule';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Booking {
