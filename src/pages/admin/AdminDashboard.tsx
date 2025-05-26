@@ -143,8 +143,8 @@ const AdminDashboard = () => {
             </div>
           ) : bookings.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
-              {bookings.map(booking => (
-                <BookingCard key={booking.id} booking={booking} />
+              {bookings.map((booking, index) => (
+                <BookingCard key={index} booking={booking} />
               ))}
             </div>
           ) : (
