@@ -27,15 +27,14 @@ const AdminDashboard = () => {
     const formattedDate = formatDateToYMD(currentDate);
 
     setLoading(true);
-    fetch('https://xofome.online/barbeariamagic/get_agendamentos.php', {
+    fetch('https://xofome.online/barbeariamagic/get_agendamento.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         barbeiro_id: barbeiro.id,
-        date: formattedDate,
-        viewMode: viewMode
+        date: formattedDate
       })
     })
       .then(res => res.json())
