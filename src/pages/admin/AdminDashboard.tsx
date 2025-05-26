@@ -5,10 +5,19 @@ import BookingCard from '@/components/admin/BookingCard';
 import DashboardStats from '@/components/admin/DashboardStats';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
+interface Booking {
+  id: number;
+  nome_cliente: string;
+  telefone: string;
+  servico: string;
+  horario: string;
+  status: string;
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('day');
   const [loading, setLoading] = useState(true);
 
@@ -143,7 +152,14 @@ const AdminDashboard = () => {
           ) : bookings.length > 0 ? (
             <div className="grid grid-cols-1 gap-4">
               {bookings.map((booking, index) => (
-                <BookingCard key={index} booking={booking} />
+                <BookingCard key={index} booking={{
+                  id: booking.id,
+                  customerName: booking.nome_cliente,
+                  phone: booking.telefone,
+                  service: booking.servico,
+                  time: booking.horario,
+                  status: booking.status || 'pending'
+                }} />
               ))}
             </div>
           ) : (
