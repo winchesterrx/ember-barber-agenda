@@ -153,7 +153,7 @@ const AdminDashboard = () => {
             <div className="grid grid-cols-1 gap-4">
               {bookings.map((booking, index) => (
                 <BookingCard key={index} booking={{
-                  id: booking.id,
+                  id: booking.id.toString(),
                   customerName: booking.nome_cliente,
                   phone: booking.telefone,
                   service: booking.servico,
