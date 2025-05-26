@@ -11,7 +11,7 @@ interface Booking {
   telefone: string;
   servico: string;
   horario: string;
-  status: string;
+  status: string | null;
 }
 
 const AdminDashboard = () => {
@@ -33,6 +33,8 @@ const AdminDashboard = () => {
     }
 
     const barbeiro = JSON.parse(token);
+    console.log('ID do barbeiro logado:', barbeiro.id);
+
     const formattedDate = formatDateToYMD(currentDate);
 
     setLoading(true);
@@ -48,6 +50,7 @@ const AdminDashboard = () => {
     })
       .then(res => res.json())
       .then(data => {
+        console.log('Agendamentos recebidos:', data.agendamentos);
         if (data.success) {
           setBookings(data.agendamentos);
         } else {
@@ -55,7 +58,8 @@ const AdminDashboard = () => {
         }
         setLoading(false);
       })
-      .catch(() => {
+      .catch(error => {
+        console.error('Erro na requisição:', error);
         setBookings([]);
         setLoading(false);
       });
