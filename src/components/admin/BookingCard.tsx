@@ -19,10 +19,34 @@ const BookingCard = ({ booking }: BookingCardProps) => {
   const [status, setStatus] = useState(booking.status);
   const [showOptions, setShowOptions] = useState(false);
   
-  const handleStatusChange = (newStatus: string) => {
-    setStatus(newStatus);
-    setShowOptions(false);
-  };
+ const handleStatusChange = (newStatus: string) => {
+  setStatus(newStatus);
+  setShowOptions(false);
+
+  fetch('https://xofome.online/barbeariamagic/atualizar_status.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      id: booking.id,
+      status: newStatus
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (!data.success) {
+      console.error('Erro ao atualizar status:', data.message);
+      // Reverte visualmente se necessário
+      setStatus(booking.status || 'pending');
+    }
+  })
+  .catch(err => {
+    console.error('Erro de rede ao atualizar status:', err);
+    setStatus(booking.status || 'pending');
+  });
+};
+
   
   const getStatusColor = () => {
     switch (status) {
