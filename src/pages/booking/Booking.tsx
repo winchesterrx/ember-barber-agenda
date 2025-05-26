@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -40,6 +40,7 @@ interface BookingData {
 const Booking = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [bookingData, setBookingData] = useState<BookingData>({
     service: null,
     barber: null,
@@ -51,6 +52,31 @@ const Booking = () => {
       cpf: ''
     }
   });
+
+  useEffect(() => {
+    if (bookingData.barber && bookingData.date) {
+      const dateStr = bookingData.date.toISOString().split('T')[0];
+      fetch('https://xofome.online/barbeariamagic/get_horarios_disponiveis_para_data.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id_barbeiro: bookingData.barber.id,
+          data: dateStr
+        })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setAvailableTimes(data.horarios.map((h: any) => h.horario_inicio));
+          } else {
+            setAvailableTimes([]);
+          }
+        })
+        .catch(() => {
+          setAvailableTimes([]);
+        });
+    }
+  }, [bookingData.barber, bookingData.date]);
 
   const handleServiceSelect = (service: Service) => {
     setBookingData(prev => ({ ...prev, service }));
@@ -80,26 +106,30 @@ const Booking = () => {
 
     setBookingData(updatedBooking);
 
-   fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    nome_cliente: updatedBooking.customer.name,
-    telefone: updatedBooking.customer.whatsapp,
-    cpf: updatedBooking.customer.cpf,
-    data: updatedBooking.date?.toISOString().split('T')[0],
-    horario: updatedBooking.time,
-    servico: updatedBooking.service?.name,
-    valor: updatedBooking.service?.price ?? 0,
-    barbeiro: updatedBooking.barber?.name,
-    id_barbeiro: updatedBooking.barber?.id
-  })
-})
-
+    fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        nome_cliente: updatedBooking.customer.name,
+        telefone: updatedBooking.customer.whatsapp,
+        cpf: updatedBooking.customer.cpf,
+        data: updatedBooking.date?.toISOString().split('T')[0],
+        horario: updatedBooking.time,
+        servico: updatedBooking.service?.name,
+        valor: updatedBooking.service?.price ?? 0,
+        barbeiro: updatedBooking.barber?.name,
+        id_barbeiro: updatedBooking.barber?.id
+      })
+    })
       .then(response => response.json())
-      .then(() => {
+      .then(response => {
+        if (!response.success) {
+          alert(response.message || 'Erro ao salvar o agendamento.');
+          return;
+        }
+
         const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
         const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.name}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
 
@@ -143,6 +173,7 @@ const Booking = () => {
         return (
           <TimeSelection
             onSelect={handleTimeSelect}
+            availableTimes={availableTimes}
             serviceId={bookingData.service?.id || 0}
             barberId={bookingData.barber?.id || 0}
             date={bookingData.date}
