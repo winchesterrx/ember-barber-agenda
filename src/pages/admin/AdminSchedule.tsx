@@ -40,46 +40,47 @@ const AdminSchedule = () => {
     }
 
     const { id } = JSON.parse(token);
-    fetch(`https://xofome.online/barbeariamagic/get_horarios_disponiveis.php?id_barbeiro=${id}`)
+    fetch(`https://xofome.online/barbeariamagic/get_horarios_disponiveis.php?id_barbeiro=${id}&dia_semana=${selectedDay}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
           const slots = data.horarios.map((h: any, index: number) => ({
             id: index + 1,
-            day: h.dia_semana,
+            day: selectedDay,
             start_time: h.horario_inicio,
             end_time: h.horario_fim,
-            is_active: h.ativo === 1
+            is_active: true
           }));
           setTimeSlots(slots);
+        } else {
+          setTimeSlots([]);
         }
         setLoading(false);
       });
-  }, [navigate]);
+  }, [navigate, selectedDay]);
 
   const handleToggleActive = (id: number) => {
-    setTimeSlots(prevSlots => 
-      prevSlots.map(slot => 
+    setTimeSlots(prevSlots =>
+      prevSlots.map(slot =>
         slot.id === id ? { ...slot, is_active: !slot.is_active } : slot
       )
     );
   };
 
   const handleAddNewSlot = () => {
-  const newId = timeSlots.length > 0 ? Math.max(...timeSlots.map(slot => slot.id)) + 1 : 1;
-  const slot: TimeSlot = {
-    id: newId,
-    day: newSlot.day,
-    start_time: newSlot.start_time,
-    end_time: newSlot.end_time,
-    is_active: true
+    const newId = timeSlots.length > 0 ? Math.max(...timeSlots.map(slot => slot.id)) + 1 : 1;
+    const slot: TimeSlot = {
+      id: newId,
+      day: newSlot.day,
+      start_time: newSlot.start_time,
+      end_time: newSlot.end_time,
+      is_active: true
+    };
+
+    console.log("📌 Novo horário adicionado:", slot);
+    setTimeSlots(prev => [...prev, slot]);
+    setIsAddingSlot(false);
   };
-
-  console.log("🧩 Novo horário adicionado:", slot); // 👈 log útil para debug
-
-  setTimeSlots(prev => [...prev, slot]);
-  setIsAddingSlot(false);
-};
 
   const handleSaveAll = () => {
     const token = sessionStorage.getItem('barberToken');
@@ -93,7 +94,7 @@ const AdminSchedule = () => {
       ativo: is_active ? 1 : 0
     }));
 
-    console.log("🔄 Enviando payload:", payload);
+    console.log("📤 Enviando payload:", payload);
 
     fetch('https://xofome.online/barbeariamagic/salvar_horarios.php', {
       method: 'POST',
