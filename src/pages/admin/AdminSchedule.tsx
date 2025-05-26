@@ -60,11 +60,44 @@ const AdminSchedule = () => {
   }, [navigate, selectedDay]);
 
   const handleToggleActive = (id: number) => {
-    setTimeSlots(prevSlots =>
-      prevSlots.map(slot =>
-        slot.id === id ? { ...slot, is_active: !slot.is_active } : slot
-      )
-    );
+    const token = sessionStorage.getItem('barberToken');
+    if (!token) return;
+    const { id: id_barbeiro } = JSON.parse(token);
+
+    setTimeSlots(prevSlots => {
+      const updatedSlots = prevSlots.map(slot => {
+        if (slot.id === id) {
+          const novoStatus = !slot.is_active;
+
+          // Atualiza no banco de dados
+          fetch("https://xofome.online/barbeariamagic/update_horario_status.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id_barbeiro,
+              dia_semana: slot.day,
+              horario_inicio: slot.start_time,
+              horario_fim: slot.end_time,
+              ativo: novoStatus ? 1 : 0
+            })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (!data.success) {
+                alert("Erro ao atualizar horário!");
+              }
+            })
+            .catch(() => {
+              alert("Erro de rede ao tentar atualizar horário.");
+            });
+
+          return { ...slot, is_active: novoStatus };
+        }
+        return slot;
+      });
+
+      return updatedSlots;
+    });
   };
 
   const handleAddNewSlot = () => {
