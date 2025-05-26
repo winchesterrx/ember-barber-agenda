@@ -37,10 +37,15 @@ interface BookingData {
   };
 }
 
+interface TimeSlot {
+  horario: string;
+  disponivel: boolean;
+}
+
 const Booking = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+  const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
   const [bookingData, setBookingData] = useState<BookingData>({
     service: null,
     barber: null,
@@ -55,22 +60,14 @@ const Booking = () => {
 
   useEffect(() => {
     if (bookingData.barber && bookingData.date) {
+      const dayOfWeek = bookingData.date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
       const dateStr = bookingData.date.toISOString().split('T')[0];
-      fetch('https://xofome.online/barbeariamagic/get_horarios_disponiveis_para_data.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id_barbeiro: bookingData.barber.id,
-          data: dateStr
-        })
-      })
+
+      fetch('https://xofome.online/barbeariamagic/horarios_disponiveis_filtrados.php'
+        + `?id_barbeiro=${bookingData.barber.id}&dia_semana=${dayOfWeek}&data=${dateStr}`)
         .then(res => res.json())
         .then(data => {
-          if (data.success) {
-            setAvailableTimes(data.horarios.map((h: any) => h.horario_inicio));
-          } else {
-            setAvailableTimes([]);
-          }
+          setAvailableTimes(data);
         })
         .catch(() => {
           setAvailableTimes([]);
