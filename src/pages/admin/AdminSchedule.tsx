@@ -66,18 +66,20 @@ const AdminSchedule = () => {
   };
 
   const handleAddNewSlot = () => {
-    const newId = timeSlots.length > 0 ? Math.max(...timeSlots.map(slot => slot.id)) + 1 : 1;
-    const slot: TimeSlot = {
-      id: newId,
-      day: newSlot.day,
-      start_time: newSlot.start_time,
-      end_time: newSlot.end_time,
-      is_active: true
-    };
-
-    setTimeSlots(prev => [...prev, slot]);
-    setIsAddingSlot(false);
+  const newId = timeSlots.length > 0 ? Math.max(...timeSlots.map(slot => slot.id)) + 1 : 1;
+  const slot: TimeSlot = {
+    id: newId,
+    day: newSlot.day,
+    start_time: newSlot.start_time,
+    end_time: newSlot.end_time,
+    is_active: true
   };
+
+  console.log("🧩 Novo horário adicionado:", slot); // 👈 log útil para debug
+
+  setTimeSlots(prev => [...prev, slot]);
+  setIsAddingSlot(false);
+};
 
   const handleSaveAll = () => {
     const token = sessionStorage.getItem('barberToken');
