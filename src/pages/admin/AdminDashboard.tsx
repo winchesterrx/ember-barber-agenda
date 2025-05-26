@@ -45,7 +45,8 @@ const AdminDashboard = () => {
       },
       body: JSON.stringify({
         barbeiro_id: barbeiro.id,
-        date: formattedDate
+        date: formattedDate,
+        viewMode: viewMode
       })
     })
       .then(res => res.json())
