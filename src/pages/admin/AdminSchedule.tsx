@@ -91,6 +91,8 @@ const AdminSchedule = () => {
       ativo: is_active ? 1 : 0
     }));
 
+    console.log("🔄 Enviando payload:", payload);
+
     fetch('https://xofome.online/barbeariamagic/salvar_horarios.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -98,8 +100,13 @@ const AdminSchedule = () => {
     })
       .then(res => res.json())
       .then(data => {
+        console.log("📥 Resposta da API:", data);
         if (data.success) alert('Horários salvos com sucesso!');
-        else alert('Erro ao salvar horários');
+        else alert('Erro ao salvar horários: ' + data.message);
+      })
+      .catch(err => {
+        console.error("❌ Erro na requisição:", err);
+        alert('Erro de rede ao salvar horários');
       });
   };
 
