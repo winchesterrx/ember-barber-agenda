@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -10,26 +9,26 @@ interface DateSelectionProps {
 
 const DateSelection = ({ onSelect }: DateSelectionProps) => {
   const [date, setDate] = useState<Date | undefined>(undefined);
-  
+
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
       setDate(selectedDate);
       onSelect(selectedDate);
     }
   };
-  
-  // Get current date and add 1 day
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  // Get date 30 days from now
+
+  // Data de hoje zerada para comparações
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Data final (30 dias à frente)
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-  
+
   return (
     <div className="booking-step">
       <h2 className="text-2xl font-semibold mb-6">Escolha a data</h2>
-      
+
       <div className="bg-barber-gray border border-barber-light-gray rounded-lg p-6">
         <div className="flex flex-col items-center">
           <Calendar
@@ -37,16 +36,18 @@ const DateSelection = ({ onSelect }: DateSelectionProps) => {
             selected={date}
             onSelect={handleDateSelect}
             className="bg-barber-gray text-white pointer-events-auto"
-            fromDate={tomorrow}
+            fromDate={today}
             toDate={thirtyDaysFromNow}
             locale={ptBR}
-            // Disable Sundays (0 = Sunday)
+            // Desabilita domingos e datas passadas
             disabled={(date) => {
               const day = date.getDay();
-              return day === 0;
+              const selectedDate = new Date(date);
+              selectedDate.setHours(0, 0, 0, 0);
+              return day === 0 || selectedDate < today;
             }}
           />
-          
+
           {date && (
             <div className="mt-4 p-4 bg-barber-orange bg-opacity-10 rounded-lg text-center">
               <p className="text-lg text-barber-orange">
