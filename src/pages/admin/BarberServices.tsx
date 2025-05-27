@@ -34,9 +34,13 @@ const BarberServices = () => {
 
   const salvarServico = async () => {
     const body = {
-      ...form,
       id: editId ?? 0,
       id_barbeiro: idBarbeiro,
+      nome: form.nome,
+      descricao: form.descricao,
+      preco: form.preco,
+      duracao: form.duracao,
+      imagem: form.imagem,
     };
 
     await fetch("https://xofome.online/barbeariamagic/salvar_servico.php", {
