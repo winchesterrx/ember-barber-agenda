@@ -43,15 +43,29 @@ const BarberServices = () => {
       imagem: form.imagem,
     };
 
-    await fetch("https://xofome.online/barbeariamagic/salvar_servico.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    console.log("Enviando serviço:", body);
 
-    setForm({ nome: "", descricao: "", preco: 0, duracao: 30, imagem: "" });
-    setEditId(null);
-    fetchServicos();
+    try {
+      const response = await fetch("https://xofome.online/barbeariamagic/salvar_servico.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+      console.log("Resposta do servidor:", result);
+
+      if (!result.success) {
+        alert("Erro ao salvar: " + (result.message || "Erro desconhecido."));
+      } else {
+        setForm({ nome: "", descricao: "", preco: 0, duracao: 30, imagem: "" });
+        setEditId(null);
+        fetchServicos();
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Erro ao salvar o serviço. Consulte o console.");
+    }
   };
 
   const excluirServico = async (id: number) => {
@@ -132,6 +146,7 @@ const BarberServices = () => {
         </div>
         {form.imagem && <img src={`https://xofome.online/barbeariamagic/${form.imagem}`} className="h-32 rounded border border-barber-light-gray object-cover" />}
         <button
+          type="button"
           onClick={salvarServico}
           className="bg-barber-orange hover:bg-opacity-90 px-6 py-2 rounded-lg text-white font-semibold text-lg"
         >
