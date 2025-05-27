@@ -2,6 +2,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Calendar, Clock, User, LogOut, Menu, X } from 'lucide-react';
+import { Calendar, Clock, User, Scissors } from 'lucide-react';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -33,7 +34,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const menuItems = [
     { path: '/admin/dashboard', label: 'Agendamentos', icon: <Calendar className="w-5 h-5" /> },
     { path: '/admin/horarios', label: 'Horários', icon: <Clock className="w-5 h-5" /> },
-    { path: '/admin/perfil', label: 'Perfil', icon: <User className="w-5 h-5" /> }
+    { path: '/admin/perfil', label: 'Perfil', icon: <User className="w-5 h-5" /> },
+    { path: '/admin/servicos', label: 'Serviços', icon: <Scissors className="w-5 h-5" /> }
+
   ];
 
   return (
