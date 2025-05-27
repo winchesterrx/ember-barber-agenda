@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PlusCircle, Edit, Trash2, Upload, Timer, Image as ImageIcon, DollarSign, Type } from "lucide-react";
 
 interface Servico {
   id: number;
@@ -19,7 +20,7 @@ const BarberServices = () => {
     imagem: "",
   });
   const [editId, setEditId] = useState<number | null>(null);
-  const idBarbeiro = 1; // ajuste conforme o login
+  const idBarbeiro = 1; // ajustar para login real
 
   const fetchServicos = async () => {
     const res = await fetch(`https://xofome.online/barbeariamagic/listar_servicos.php?id_barbeiro=${idBarbeiro}`);
@@ -78,71 +79,96 @@ const BarberServices = () => {
 
   return (
     <div className="p-6 text-white">
-      <h2 className="text-2xl font-bold mb-4">Gerenciar Serviços</h2>
+      <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
+        <PlusCircle className="text-orange-500" /> Gerenciar Serviços
+      </h2>
 
-      <div className="grid gap-4 mb-6">
-        <input
-          placeholder="Nome"
-          value={form.nome}
-          onChange={(e) => setForm({ ...form, nome: e.target.value })}
-          className="p-2 rounded bg-gray-800 text-white"
-        />
-        <textarea
-          placeholder="Descrição"
-          value={form.descricao}
-          onChange={(e) => setForm({ ...form, descricao: e.target.value })}
-          className="p-2 rounded bg-gray-800 text-white"
-        />
-        <input
-          type="number"
-          placeholder="Preço"
-          value={form.preco}
-          onChange={(e) => setForm({ ...form, preco: parseFloat(e.target.value) })}
-          className="p-2 rounded bg-gray-800 text-white"
-        />
-        <input
-          type="number"
-          placeholder="Duração (min)"
-          value={form.duracao}
-          onChange={(e) => setForm({ ...form, duracao: parseInt(e.target.value) })}
-          className="p-2 rounded bg-gray-800 text-white"
-        />
-        <input type="file" onChange={handleImageUpload} className="text-white" />
-        {form.imagem && <img src={`https://xofome.online/barbeariamagic/${form.imagem}`} className="h-32 rounded" />}
+      <div className="grid gap-4 mb-8 bg-barber-gray bg-opacity-70 p-6 rounded-lg border border-barber-light-gray">
+        <div className="flex items-center gap-2">
+          <Type className="text-barber-orange" />
+          <input
+            placeholder="Nome do Serviço"
+            value={form.nome}
+            onChange={(e) => setForm({ ...form, nome: e.target.value })}
+            className="p-2 rounded bg-barber-dark w-full"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Type className="text-barber-orange" />
+          <textarea
+            placeholder="Descrição"
+            value={form.descricao}
+            onChange={(e) => setForm({ ...form, descricao: e.target.value })}
+            className="p-2 rounded bg-barber-dark w-full"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <DollarSign className="text-barber-orange" />
+          <input
+            type="number"
+            placeholder="Preço"
+            value={form.preco}
+            onChange={(e) => setForm({ ...form, preco: parseFloat(e.target.value) })}
+            className="p-2 rounded bg-barber-dark w-full"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Timer className="text-barber-orange" />
+          <input
+            type="number"
+            placeholder="Duração (min)"
+            value={form.duracao}
+            onChange={(e) => setForm({ ...form, duracao: parseInt(e.target.value) })}
+            className="p-2 rounded bg-barber-dark w-full"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <ImageIcon className="text-barber-orange" />
+          <input type="file" onChange={handleImageUpload} className="text-white" />
+        </div>
+        {form.imagem && <img src={`https://xofome.online/barbeariamagic/${form.imagem}`} className="h-32 rounded border border-barber-light-gray" />}
         <button
           onClick={salvarServico}
-          className="bg-orange-600 px-4 py-2 rounded hover:bg-orange-700 transition"
+          className="bg-barber-orange hover:bg-opacity-90 px-6 py-2 rounded-lg text-white font-semibold text-lg"
         >
-          {editId ? "Atualizar" : "Salvar"}
+          {editId ? "Atualizar Serviço" : "Salvar Serviço"}
         </button>
       </div>
 
-      <h3 className="text-xl font-semibold mb-2">Serviços Cadastrados</h3>
+      <h3 className="text-2xl font-semibold mb-4">Serviços Cadastrados</h3>
       <div className="grid gap-4">
         {servicos.map((s) => (
-          <div key={s.id} className="p-4 border border-gray-700 rounded bg-barber-dark">
+          <div key={s.id} className="p-4 border border-barber-light-gray rounded bg-barber-gray bg-opacity-80">
             <div className="flex justify-between items-center">
-              <div>
-                <h4 className="text-lg font-bold">{s.nome}</h4>
+              <div className="space-y-1">
+                <h4 className="text-lg font-bold text-barber-orange">{s.nome}</h4>
                 <p>{s.descricao}</p>
                 <p>
                   <strong>Preço:</strong> R$ {s.preco.toFixed(2)} | <strong>Duração:</strong> {s.duracao} min
                 </p>
               </div>
-              {s.imagem && <img src={`https://xofome.online/barbeariamagic/${s.imagem}`} className="h-20 rounded ml-4" />}
+              {s.imagem && (
+                <img
+                  src={`https://xofome.online/barbeariamagic/${s.imagem}`}
+                  className="h-20 w-20 object-cover rounded ml-4 border border-barber-light-gray"
+                />
+              )}
             </div>
-            <div className="mt-2 flex gap-2">
+            <div className="mt-3 flex gap-3">
               <button
                 onClick={() => {
                   setForm(s);
                   setEditId(s.id);
                 }}
-                className="text-sm bg-blue-500 px-3 py-1 rounded"
+                className="text-sm bg-blue-600 px-4 py-1 rounded hover:bg-blue-700 flex items-center gap-1"
               >
-                Editar
+                <Edit size={16} /> Editar
               </button>
-              <button onClick={() => excluirServico(s.id)} className="text-sm bg-red-500 px-3 py-1 rounded">
-                Excluir
+              <button
+                onClick={() => excluirServico(s.id)}
+                className="text-sm bg-red-600 px-4 py-1 rounded hover:bg-red-700 flex items-center gap-1"
+              >
+                <Trash2 size={16} /> Excluir
               </button>
             </div>
           </div>
