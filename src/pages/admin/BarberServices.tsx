@@ -78,13 +78,13 @@ const BarberServices = () => {
   };
 
   return (
-    <div className="p-6 text-white">
-      <h2 className="text-3xl font-bold mb-6 flex items-center gap-2">
+    <div className="p-4 sm:p-6 text-white">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 flex items-center gap-2">
         <PlusCircle className="text-orange-500" /> Gerenciar Serviços
       </h2>
 
-      <div className="grid gap-4 mb-8 bg-barber-gray bg-opacity-70 p-6 rounded-lg border border-barber-light-gray">
-        <div className="flex items-center gap-2">
+      <div className="grid gap-4 mb-8 bg-barber-gray bg-opacity-70 p-4 sm:p-6 rounded-lg border border-barber-light-gray">
+        <div className="flex items-center gap-2 flex-col sm:flex-row">
           <Type className="text-barber-orange" />
           <input
             placeholder="Nome do Serviço"
@@ -93,7 +93,7 @@ const BarberServices = () => {
             className="p-2 rounded bg-barber-dark w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-col sm:flex-row">
           <Type className="text-barber-orange" />
           <textarea
             placeholder="Descrição"
@@ -102,7 +102,7 @@ const BarberServices = () => {
             className="p-2 rounded bg-barber-dark w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-col sm:flex-row">
           <DollarSign className="text-barber-orange" />
           <input
             type="number"
@@ -112,7 +112,7 @@ const BarberServices = () => {
             className="p-2 rounded bg-barber-dark w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-col sm:flex-row">
           <Timer className="text-barber-orange" />
           <input
             type="number"
@@ -122,11 +122,11 @@ const BarberServices = () => {
             className="p-2 rounded bg-barber-dark w-full"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-col sm:flex-row">
           <ImageIcon className="text-barber-orange" />
           <input type="file" onChange={handleImageUpload} className="text-white" />
         </div>
-        {form.imagem && <img src={`https://xofome.online/barbeariamagic/${form.imagem}`} className="h-32 rounded border border-barber-light-gray" />}
+        {form.imagem && <img src={`https://xofome.online/barbeariamagic/${form.imagem}`} className="h-32 rounded border border-barber-light-gray object-cover" />}
         <button
           onClick={salvarServico}
           className="bg-barber-orange hover:bg-opacity-90 px-6 py-2 rounded-lg text-white font-semibold text-lg"
@@ -135,11 +135,11 @@ const BarberServices = () => {
         </button>
       </div>
 
-      <h3 className="text-2xl font-semibold mb-4">Serviços Cadastrados</h3>
+      <h3 className="text-xl sm:text-2xl font-semibold mb-4">Serviços Cadastrados</h3>
       <div className="grid gap-4">
         {servicos.map((s) => (
           <div key={s.id} className="p-4 border border-barber-light-gray rounded bg-barber-gray bg-opacity-80">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div className="space-y-1">
                 <h4 className="text-lg font-bold text-barber-orange">{s.nome}</h4>
                 <p>{s.descricao}</p>
@@ -150,11 +150,11 @@ const BarberServices = () => {
               {s.imagem && (
                 <img
                   src={`https://xofome.online/barbeariamagic/${s.imagem}`}
-                  className="h-20 w-20 object-cover rounded ml-4 border border-barber-light-gray"
+                  className="h-20 w-20 object-cover rounded border border-barber-light-gray"
                 />
               )}
             </div>
-            <div className="mt-3 flex gap-3">
+            <div className="mt-3 flex flex-col sm:flex-row gap-2">
               <button
                 onClick={() => {
                   setForm(s);
