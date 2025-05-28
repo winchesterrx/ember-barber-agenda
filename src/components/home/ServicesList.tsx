@@ -1,80 +1,89 @@
-import { Scissors, ScissorsLineDashed, Clock, Droplets, Sparkles } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { Clock } from "lucide-react";
 
-interface Service {
+interface Servico {
   id: number;
-  name: string;
-  description: string;
-  price: number;
-  duration: number;
-  icon: React.ReactNode;
+  nome: string;
+  descricao: string;
+  preco: number;
+  duracao: number;
+  imagem: string;
 }
 
-const services: Service[] = [
-  {
-    id: 1,
-    name: 'Corte de Cabelo',
-    description: 'Corte moderno com acabamento perfeito',
-    price: 40,
-    duration: 30,
-    icon: <Scissors className="w-8 h-8 text-barber-orange" />
-  },
-  {
-    id: 2,
-    name: 'Barba',
-    description: 'Modelagem e hidratação completa',
-    price: 30,
-    duration: 30,
-    icon: <ScissorsLineDashed className="w-8 h-8 text-barber-orange" />
-  },
-  {
-    id: 3,
-    name: 'Combo Completo',
-    description: 'Cabelo + barba com atendimento premium',
-    price: 65,
-    duration: 60,
-    icon: <Sparkles className="w-8 h-8 text-barber-orange" />
-  },
-  {
-    id: 4,
-    name: 'Pintura',
-    description: 'Coloração profissional e durável',
-    price: 70,
-    duration: 90,
-    icon: <Droplets className="w-8 h-8 text-barber-orange" />
-  }
-];
-
 const ServicesList = () => {
-  return (
-    <section className="py-20 px-4 bg-gradient-to-br from-barber-gray to-barber-dark text-white">
-      <div className="max-w-6xl mx-auto text-center mb-12">
-        <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white drop-shadow-md">
-          ✂️ Nossos Serviços
-        </h2>
-        <p className="mt-3 text-lg sm:text-xl text-barber-light-gray italic">
-          Qualidade e estilo para o homem moderno
-        </p>
-      </div>
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  const [erro, setErro] = useState<string | null>(null);
 
-      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-        {services.map((service) => (
-          <div
-            key={service.id}
-            className="bg-barber-dark bg-opacity-90 border border-barber-light-gray rounded-xl p-6 shadow-md hover:shadow-lg transition-all duration-300 flex flex-col"
-          >
-            <div className="flex items-center justify-between mb-4">
-              {service.icon}
-            </div>
-            <h3 className="text-xl font-bold text-white">{service.name}</h3>
-            <p className="text-sm text-barber-light mt-1 mb-4 flex-grow">{service.description}</p>
-            <div className="flex justify-between items-center mt-auto text-barber-orange text-sm pt-3 border-t border-barber-light-gray">
-              <div className="flex items-center gap-1">
-                <Clock size={16} /> {service.duration} min
+  useEffect(() => {
+    const fetchServicos = async () => {
+      try {
+        const res = await fetch("https://xofome.online/barbeariamagic/listar_servicos_publicos.php");
+        const data = await res.json();
+
+        const parsed = data.map((s: any) => ({
+          ...s,
+          preco: parseFloat(s.preco),
+          duracao: parseInt(s.duracao),
+        }));
+
+        setServicos(parsed);
+      } catch (err) {
+        console.error("Erro ao carregar serviços públicos", err);
+        setErro("Não foi possível carregar os serviços no momento.");
+      }
+    };
+
+    fetchServicos();
+  }, []);
+
+  return (
+    <section className="py-20 px-6 bg-gradient-to-b from-[#1c1c1c] via-[#222] to-[#1c1c1c] text-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-sm">
+            <span className="text-barber-orange">✂️</span> Nossos Serviços
+          </h2>
+          <p className="text-lg text-gray-400 mt-2 font-light">
+            Qualidade e estilo para o homem moderno
+          </p>
+        </div>
+
+        {erro ? (
+          <p className="text-red-500 text-center">{erro}</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {servicos.map((service) => (
+              <div
+                key={service.id}
+                className="bg-[#121212] border border-[#333] rounded-xl p-6 shadow-lg hover:border-barber-orange hover:scale-[1.02] transition-all duration-300 flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-barber-orange text-xl">✂️</span>
+                  {service.imagem && (
+                    <img
+                      src={`https://xofome.online/barbeariamagic/${service.imagem}`}
+                      alt={service.nome}
+                      className="h-10 w-10 rounded-full object-cover border border-gray-700"
+                    />
+                  )}
+                </div>
+
+                <h3 className="text-lg font-bold mb-1 text-white">{service.nome}</h3>
+                <p className="text-sm text-gray-400 mb-4">{service.descricao}</p>
+
+                <div className="flex justify-between items-center border-t border-[#333] pt-3 mt-auto text-sm text-gray-300">
+                  <div className="flex items-center gap-1">
+                    <Clock size={16} className="text-barber-orange" />
+                    <span>{service.duracao} min</span>
+                  </div>
+                  <span className="text-barber-orange font-semibold text-lg">
+                    R$ {service.preco.toFixed(2)}
+                  </span>
+                </div>
               </div>
-              <span className="text-lg font-semibold">R$ {service.price.toFixed(2)}</span>
-            </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
     </section>
   );
