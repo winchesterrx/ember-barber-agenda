@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Timer, DollarSign, Scissors } from "lucide-react";
+import { Clock, Scissors } from "lucide-react";
 
-interface Servico {
+interface Service {
   id: number;
   nome: string;
   descricao: string;
@@ -10,84 +10,54 @@ interface Servico {
   imagem: string;
 }
 
-const PublicServices = () => {
-  const [servicos, setServicos] = useState<Servico[]>([]);
+const ServicesList = () => {
+  const [services, setServices] = useState<Service[]>([]);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchServicos = async () => {
-      try {
-        const res = await fetch("https://xofome.online/barbeariamagic/listar_servicos_publicos.php");
-        const data = await res.json();
-
-        if (!Array.isArray(data)) throw new Error("Resposta inesperada");
-
-        const processado = data.map((s: any) => ({
-          ...s,
-          preco: parseFloat(s.preco) || 0,
-          duracao: parseInt(s.duracao) || 0,
-        }));
-
-        setServicos(processado);
-      } catch (err) {
-        console.error("Erro ao carregar serviços:", err);
-        setErro("Não foi possível carregar os serviços no momento.");
-      }
-    };
-
-    fetchServicos();
+    fetch("https://xofome.online/barbeariamagic/listar_servicos_publicos.php")
+      .then(res => res.json())
+      .then(data => setServices(data))
+      .catch(err => setErro("Não foi possível carregar os serviços."));
   }, []);
 
-  if (erro) {
-    return (
-      <section className="py-12 text-center text-red-500 bg-barber-dark">
-        <p>{erro}</p>
-      </section>
-    );
-  }
-
-  if (!servicos.length) {
-    return (
-      <section className="py-12 text-center text-gray-400 bg-barber-dark">
-        <p>Carregando serviços...</p>
-      </section>
-    );
-  }
-
   return (
-    <section className="py-16 px-4 sm:px-8 lg:px-16 bg-barber-gray text-white">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white">Nossos Serviçosssss</h2>
-        <p className="text-barber-light mt-2">Qualidade e estilo para o homem moderno</p>
+    <section className="bg-gradient-to-b from-barber-dark to-barber-gray py-24 px-4">
+      <div className="text-center mb-14">
+        <h2 className="text-5xl font-extrabold text-white drop-shadow-lg tracking-tight">Nossos Serviços</h2>
+        <p className="text-barber-orange text-lg mt-3 italic tracking-wide">
+          Qualidade e estilo para o homem moderno
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {servicos.map((s) => (
+      {erro && <p className="text-red-500 text-center">{erro}</p>}
+
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {services.map(service => (
           <div
-            key={s.id}
-            className="bg-barber-dark border border-barber-light-gray rounded-xl shadow-lg p-5 hover:scale-105 hover:shadow-2xl transition-transform duration-300"
+            key={service.id}
+            className="bg-barber-dark rounded-2xl shadow-xl p-6 border border-barber-light-gray hover:border-barber-orange hover:shadow-orange-500/20 transition-all duration-300"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex justify-between items-center mb-5">
               <Scissors className="text-barber-orange w-6 h-6" />
-              {s.imagem && (
+              {service.imagem && (
                 <img
-                  src={`https://xofome.online/barbeariamagic/${s.imagem}`}
-                  alt={s.nome}
-                  className="w-10 h-10 object-cover rounded-full border border-barber-light-gray"
+                  src={`https://xofome.online/barbeariamagic/${service.imagem}`}
+                  alt={service.nome}
+                  className="w-10 h-10 rounded-full object-cover border border-barber-light-gray"
                 />
               )}
             </div>
-
-            <h3 className="text-lg font-semibold text-white mb-1">{s.nome}</h3>
-            <p className="text-barber-light text-sm mb-4">{s.descricao}</p>
-
-            <div className="flex justify-between text-barber-orange text-sm border-t border-barber-light-gray pt-3">
-              <span className="flex items-center gap-1">
-                <Timer className="w-4 h-4" /> {s.duracao} min
-              </span>
-              <span className="flex items-center gap-1 font-bold">
-                <DollarSign className="w-4 h-4" /> R$ {s.preco.toFixed(2)}
-              </span>
+            <h3 className="text-xl font-bold text-white mb-1">{service.nome}</h3>
+            <p className="text-sm text-gray-400 mb-5">{service.descricao}</p>
+            <div className="flex justify-between text-sm text-gray-300 border-t pt-3 border-barber-light-gray">
+              <div className="flex items-center gap-1">
+                <Clock className="w-4 h-4 text-barber-orange" />
+                {service.duracao} min
+              </div>
+              <div className="text-barber-orange font-bold text-lg">
+                R$ {parseFloat(service.preco).toFixed(2)}
+              </div>
             </div>
           </div>
         ))}
@@ -96,4 +66,4 @@ const PublicServices = () => {
   );
 };
 
-export default PublicServices;
+export default ServicesList;
