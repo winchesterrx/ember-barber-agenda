@@ -27,7 +27,13 @@ const BarberServices = () => {
     try {
       const res = await fetch(`https://xofome.online/barbeariamagic/listar_servicos.php?id_barbeiro=${idBarbeiro}`);
       const data = await res.json();
-      setServicos(data);
+      // Garantir que preco e duracao sejam números válidos
+      const sanitized = data.map((s: any) => ({
+        ...s,
+        preco: parseFloat(s.preco) || 0,
+        duracao: parseInt(s.duracao) || 0,
+      }));
+      setServicos(sanitized);
     } catch (error) {
       console.error("Erro ao buscar serviços:", error);
       setErro("Erro ao carregar os serviços. Por favor, tente novamente mais tarde.");
@@ -171,7 +177,7 @@ const BarberServices = () => {
                 <h4 className="text-lg font-bold text-barber-orange">{s.nome}</h4>
                 <p>{s.descricao}</p>
                 <p>
-                  <strong>Preço:</strong> R$ {s.preco.toFixed(2)} | <strong>Duração:</strong> {s.duracao} min
+                  <strong>Preço:</strong> R$ {(s.preco || 0).toFixed(2)} | <strong>Duração:</strong> {(s.duracao || 0)} min
                 </p>
               </div>
               {s.imagem && (
