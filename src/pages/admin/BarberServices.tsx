@@ -20,12 +20,18 @@ const BarberServices = () => {
     imagem: "",
   });
   const [editId, setEditId] = useState<number | null>(null);
+  const [erro, setErro] = useState<string | null>(null);
   const idBarbeiro = 1; // ajustar para login real
 
   const fetchServicos = async () => {
-    const res = await fetch(`https://xofome.online/barbeariamagic/listar_servicos.php?id_barbeiro=${idBarbeiro}`);
-    const data = await res.json();
-    setServicos(data);
+    try {
+      const res = await fetch(`https://xofome.online/barbeariamagic/listar_servicos.php?id_barbeiro=${idBarbeiro}`);
+      const data = await res.json();
+      setServicos(data);
+    } catch (error) {
+      console.error("Erro ao buscar serviços:", error);
+      setErro("Erro ao carregar os serviços. Por favor, tente novamente mais tarde.");
+    }
   };
 
   useEffect(() => {
@@ -101,6 +107,8 @@ const BarberServices = () => {
         <PlusCircle className="text-orange-500" /> Gerenciar Serviços
       </h2>
 
+      {erro && <div className="text-red-500 bg-red-100 p-2 rounded mb-4">{erro}</div>}
+
       <div className="grid gap-4 mb-8 bg-barber-gray bg-opacity-70 p-4 sm:p-6 rounded-lg border border-barber-light-gray">
         <div className="flex items-center gap-2 flex-col sm:flex-row">
           <Type className="text-barber-orange" />
@@ -126,7 +134,7 @@ const BarberServices = () => {
             type="number"
             placeholder="Preço"
             value={form.preco}
-            onChange={(e) => setForm({ ...form, preco: parseFloat(e.target.value) })}
+            onChange={(e) => setForm({ ...form, preco: parseFloat(e.target.value) || 0 })}
             className="p-2 rounded bg-barber-dark w-full"
           />
         </div>
@@ -136,7 +144,7 @@ const BarberServices = () => {
             type="number"
             placeholder="Duração (min)"
             value={form.duracao}
-            onChange={(e) => setForm({ ...form, duracao: parseInt(e.target.value) })}
+            onChange={(e) => setForm({ ...form, duracao: parseInt(e.target.value) || 0 })}
             className="p-2 rounded bg-barber-dark w-full"
           />
         </div>
