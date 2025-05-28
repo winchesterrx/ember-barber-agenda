@@ -33,44 +33,40 @@ const BarberServices = () => {
   }, []);
 
   const salvarServico = async () => {
-  const body = {
-    id: editId ?? 0,
-    id_barbeiro: idBarbeiro,
-    nome: form.nome,
-    descricao: form.descricao,
-    preco: form.preco,
-    duracao: form.duracao,
-    imagem: form.imagem,
-  };
+    const body = {
+      id: editId ?? 0,
+      id_barbeiro: idBarbeiro,
+      nome: form.nome,
+      descricao: form.descricao,
+      preco: form.preco,
+      duracao: form.duracao,
+      imagem: form.imagem,
+    };
 
-  try {
-    const response = await fetch("https://xofome.online/barbeariamagic/salvar_servico.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    console.log("Enviando serviço:", body);
 
-    const result = await response.json();
+    try {
+      const response = await fetch("https://xofome.online/barbeariamagic/salvar_servico.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
-    if (!result.success) {
-      console.error("Erro ao salvar serviço:", result.message);
-      alert("Erro ao salvar: " + (result.message || "Erro desconhecido."));
-      return;
+      const result = await response.json();
+      console.log("Resposta do servidor:", result);
+
+      if (!result.success) {
+        alert("Erro ao salvar: " + (result.message || "Erro desconhecido."));
+      } else {
+        setForm({ nome: "", descricao: "", preco: 0, duracao: 30, imagem: "" });
+        setEditId(null);
+        fetchServicos();
+      }
+    } catch (error) {
+      console.error("Erro na requisição:", error);
+      alert("Erro ao salvar o serviço. Consulte o console.");
     }
-
-    // Resetar form
-    setForm({ nome: "", descricao: "", preco: 0, duracao: 30, imagem: "" });
-    setEditId(null);
-
-    // Recarregar lista
-    fetchServicos();
-
-  } catch (error) {
-    console.error("Erro inesperado:", error);
-    alert("Erro ao salvar o serviço. Veja o console para mais detalhes.");
-  }
-};
-
+  };
 
   const excluirServico = async (id: number) => {
     await fetch("https://xofome.online/barbeariamagic/excluir_servico.php", {
