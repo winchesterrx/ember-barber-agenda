@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
@@ -6,7 +5,8 @@ import { Calendar } from 'lucide-react';
 // Components
 import { Button } from "@/components/ui/button";
 import HeroSection from '@/components/home/HeroSection';
-import ServicesList from '@/components/home/ServicesList';
+// Substituímos ServicesList por:
+import PublicServices from '@/components/home/PublicServices';
 import AboutUs from '@/components/home/AboutUs';
 import Footer from '@/components/shared/Footer';
 import Navbar from '@/components/shared/Navbar';
@@ -24,7 +24,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <div className="bg-gradient-to-b from-barber-dark to-barber-gray py-2"></div>
-        <ServicesList />
+        <PublicServices />
         <div className="bg-gradient-to-b from-barber-gray to-barber-dark py-2"></div>
         <AboutUs />
       </main>
