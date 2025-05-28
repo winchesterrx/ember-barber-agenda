@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Scissors, Sparkles, Droplet, Clock } from "lucide-react";
+import { Timer, DollarSign, Scissors } from "lucide-react";
 
 interface Servico {
+  id: number;
   nome: string;
   descricao: string;
   preco: number;
@@ -13,32 +14,58 @@ const PublicServices = () => {
   const [servicos, setServicos] = useState<Servico[]>([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetch("https://xofome.online/barbeariamagic/listar_servicos_publicos.php");
-      const data = await res.json();
-      setServicos(data);
+    const fetchServicos = async () => {
+      try {
+        const res = await fetch("https://xofome.online/barbeariamagic/listar_servicos_publico.php");
+        const data = await res.json();
+        const processado = data.map((s: any) => ({
+          ...s,
+          preco: parseFloat(s.preco) || 0,
+          duracao: parseInt(s.duracao) || 0,
+        }));
+        setServicos(processado);
+      } catch (err) {
+        console.error("Erro ao carregar serviços:", err);
+      }
     };
-    fetchData();
+
+    fetchServicos();
   }, []);
 
   return (
-    <section className="py-16 text-center text-white bg-barber-gray">
-      <h2 className="text-4xl font-bold mb-2">Nossos Serviços</h2>
-      <p className="text-lg mb-10 text-gray-300">Qualidade e estilo para o homem moderno</p>
+    <section className="py-16 px-4 sm:px-8 lg:px-16 bg-barber-gray text-white">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl sm:text-4xl font-bold text-white">Nossos Serviços</h2>
+        <p className="text-barber-light mt-2">Qualidade e estilo para o homem moderno</p>
+      </div>
 
-      <div className="grid gap-6 px-4 sm:grid-cols-2 lg:grid-cols-4 max-w-7xl mx-auto">
-        {servicos.map((s, index) => (
-          <div key={index} className="bg-barber-dark rounded-lg shadow-md p-6 text-left flex flex-col justify-between">
-            <div>
-              <div className="text-orange-500 mb-2">
-                {index === 0 ? <Scissors /> : index === 1 ? <Sparkles /> : <Droplet />}
-              </div>
-              <h3 className="text-xl font-bold text-white mb-1">{s.nome}</h3>
-              <p className="text-gray-300 mb-4">{s.descricao}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {servicos.map((s) => (
+          <div
+            key={s.id}
+            className="bg-barber-dark border border-barber-light-gray rounded-xl shadow-lg p-5 hover:scale-105 hover:shadow-2xl transition-transform duration-300"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <Scissors className="text-barber-orange w-6 h-6" />
+              {s.imagem && (
+                <img
+                  src={`https://xofome.online/barbeariamagic/${s.imagem}`}
+                  alt={s.nome}
+                  className="w-10 h-10 object-cover rounded-full border border-barber-light-gray"
+                />
+              )}
             </div>
-            <div className="flex items-center justify-between text-orange-500 font-semibold mt-auto pt-2 border-t border-gray-700">
-              <span className="flex items-center gap-1"><Clock size={16} /> {s.duracao} min</span>
-              <span>R$ {parseFloat(s.preco).toFixed(2)}</span>
+
+            <h3 className="text-lg font-semibold text-white mb-1">{s.nome}</h3>
+            <p className="text-barber-light text-sm mb-4">{s.descricao}</p>
+
+            <div className="flex justify-between text-barber-orange text-sm border-t border-barber-light-gray pt-3">
+              <span className="flex items-center gap-1">
+                <Timer className="w-4 h-4" /> {s.duracao} min
+              </span>
+              <span className="flex items-center gap-1 font-bold">
+                <DollarSign className="w-4 h-4" /> R$ {s.preco.toFixed(2)}
+              </span>
             </div>
           </div>
         ))}
