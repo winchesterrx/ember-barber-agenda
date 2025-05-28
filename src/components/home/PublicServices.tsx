@@ -17,7 +17,7 @@ const PublicServices = () => {
   useEffect(() => {
     const fetchServicos = async () => {
       try {
-        const res = await fetch("https://xofome.online/barbeariamagic/listar_servicos_publico.php");
+        const res = await fetch("https://xofome.online/barbeariamagic/listar_servicos_publicos.php");
         const data = await res.json();
 
         if (!Array.isArray(data)) throw new Error("Resposta inesperada");
