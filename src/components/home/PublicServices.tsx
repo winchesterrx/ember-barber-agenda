@@ -57,7 +57,7 @@ const PublicServices = () => {
   return (
     <section className="py-16 px-4 sm:px-8 lg:px-16 bg-barber-gray text-white">
       <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white">Nossos Serviços</h2>
+        <h2 className="text-3xl sm:text-4xl font-bold text-white">Nossos Serviçosssss</h2>
         <p className="text-barber-light mt-2">Qualidade e estilo para o homem moderno</p>
       </div>
 
