@@ -2,8 +2,8 @@ import { Check } from 'lucide-react';
 
 const AboutUs = () => {
   return (
-    <section className="py-16 bg-[url('https://xofome.online/barbeariamagic/fotos/background.jpeg')] bg-cover bg-center bg-no-repeat">
-      <div className="container mx-auto px-4 bg-black bg-opacity-80 rounded-xl py-12">
+    <section className="py-16 bg-gradient-to-br from-gray-800 via-gray-900 to-black">
+      <div className="container mx-auto px-4 bg-black bg-opacity-70 rounded-xl py-12">
         <div className="flex flex-col md:flex-row gap-12 items-center">
           <div className="flex-1">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
@@ -31,11 +31,11 @@ const AboutUs = () => {
           </div>
 
           <div className="flex-1 relative">
-            <div className="aspect-[3/4] bg-barber-gray rounded-lg overflow-hidden shadow-lg">
+            <div className="aspect-[3/4] rounded-lg overflow-hidden shadow-xl">
               <img 
                 src="https://xofome.online/barbeariamagic/fotos/background.jpeg"
                 alt="Barbeiro profissional" 
-                className="w-full h-full object-cover opacity-90"
+                className="w-full h-full object-cover rounded-lg border border-gray-700"
               />
             </div>
             <div className="absolute -bottom-6 -left-6 bg-barber-orange text-white p-4 rounded-lg shadow-md">
