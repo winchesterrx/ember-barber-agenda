@@ -63,7 +63,8 @@ const Booking = () => {
   useEffect(() => {
     fetch('https://xofome.online/barbeariamagic/listar_servicos_publicos.php')
       .then(res => res.json())
-      .then(data => setServices(data));
+      .then(data => setServices(data))
+      .catch(err => console.error('Erro ao buscar serviços:', err));
   }, []);
 
   useEffect(() => {
@@ -71,15 +72,10 @@ const Booking = () => {
       const dayOfWeek = bookingData.date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
       const dateStr = bookingData.date.toISOString().split('T')[0];
 
-      fetch('https://xofome.online/barbeariamagic/horarios_disponiveis_filtrados.php'
-        + `?id_barbeiro=${bookingData.barber.id}&dia_semana=${dayOfWeek}&data=${dateStr}`)
+      fetch(`https://xofome.online/barbeariamagic/horarios_disponiveis_filtrados.php?id_barbeiro=${bookingData.barber.id}&dia_semana=${dayOfWeek}&data=${dateStr}`)
         .then(res => res.json())
-        .then(data => {
-          setAvailableTimes(data);
-        })
-        .catch(() => {
-          setAvailableTimes([]);
-        });
+        .then(data => setAvailableTimes(data))
+        .catch(() => setAvailableTimes([]));
     }
   }, [bookingData.barber, bookingData.date]);
 
@@ -172,12 +168,14 @@ const Booking = () => {
               >
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-orange-500 text-lg">✂️</span>
-                  {servico.imagem && (
+                  {servico.imagem ? (
                     <img
                       src={`https://xofome.online/barbeariamagic/uploads/${servico.imagem}`}
                       alt={servico.nome}
                       className="w-8 h-8 rounded-full object-cover"
                     />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-700" />
                   )}
                 </div>
                 <h3 className="text-white font-semibold">{servico.nome}</h3>
