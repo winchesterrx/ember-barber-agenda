@@ -2,8 +2,8 @@ import { Check } from 'lucide-react';
 
 const AboutUs = () => {
   return (
-    <section className="relative py-16 bg-black">
-      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-gray-800 opacity-90"></div>
+    <section className="relative py-16 bg-gradient-to-br from-zinc-900 via-neutral-900 to-zinc-800">
+      <div className="absolute inset-0 bg-black opacity-80"></div>
       <div className="relative container mx-auto px-4">
         <div className="flex flex-col md:flex-row gap-12 items-center bg-black bg-opacity-70 rounded-xl p-10 shadow-lg">
           <div className="flex-1">
