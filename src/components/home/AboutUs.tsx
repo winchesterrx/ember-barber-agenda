@@ -33,7 +33,7 @@ const AboutUs = () => {
           <div className="flex-1 relative">
             <div className="aspect-[3/4] bg-barber-gray rounded-lg overflow-hidden">
               <img 
-                src="https://unsplash.com/pt-br/fotografias/fotografia-em-tons-de-cinza-da-pessoa-segurando-tesoura-cortando-a-barba-do-homem-fE42nRlBcG8"
+                src="https://br.pinterest.com/pin/140806233942824/"
                 alt="Barbeiro profissional" 
                 className="w-full h-full object-cover opacity-80"
               />
