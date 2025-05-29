@@ -2,9 +2,10 @@ import { Check } from 'lucide-react';
 
 const AboutUs = () => {
   return (
-    <section className="py-16 bg-gradient-to-br from-gray-800 via-gray-900 to-black">
-      <div className="container mx-auto px-4 bg-black bg-opacity-70 rounded-xl py-12">
-        <div className="flex flex-col md:flex-row gap-12 items-center">
+    <section className="relative py-16 bg-black">
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-gray-800 opacity-90"></div>
+      <div className="relative container mx-auto px-4">
+        <div className="flex flex-col md:flex-row gap-12 items-center bg-black bg-opacity-70 rounded-xl p-10 shadow-lg">
           <div className="flex-1">
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
               Por que escolher a <span className="text-barber-orange">Magic Barber</span>?
