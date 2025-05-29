@@ -74,7 +74,18 @@ const Booking = () => {
 
       fetch(`https://xofome.online/barbeariamagic/horarios_disponiveis_filtrados.php?id_barbeiro=${bookingData.barber.id}&dia_semana=${dayOfWeek}&data=${dateStr}`)
         .then(res => res.json())
-        .then(data => setAvailableTimes(data))
+        .then(data => {
+          const agora = new Date();
+          const isToday = bookingData.date?.toDateString() === agora.toDateString();
+          const horariosFiltrados = data.filter((slot: TimeSlot) => {
+            if (!isToday) return true;
+            const [h, m, s] = slot.horario.split(':');
+            const slotDate = new Date();
+            slotDate.setHours(Number(h), Number(m), Number(s));
+            return slotDate > agora;
+          });
+          setAvailableTimes(horariosFiltrados);
+        })
         .catch(() => setAvailableTimes([]));
     }
   }, [bookingData.barber, bookingData.date]);
