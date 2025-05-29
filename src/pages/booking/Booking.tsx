@@ -134,30 +134,35 @@ const Booking = () => {
         id_servico: updatedBooking.service?.id
       })
     })
-      .then(response => response.json())
-      .then(response => {
-        if (!response.success) {
-          alert(response.message || 'Erro ao salvar o agendamento.');
-          return;
-        }
+     .then(response => response.json())
+.then(response => {
+  if (!response.success) {
+    alert(response.message || 'Erro ao salvar o agendamento.');
+    return;
+  }
 
-        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
-        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
-        const link = `https://wa.me/5517997799982?text=${encodeURIComponent(msg)}`;
-        window.location.href = link;
+  const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
+  const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
 
-        navigate('/agendamento/sucesso', {
-          state: {
-            booking: {
-              service: updatedBooking.service,
-              barber: updatedBooking.barber,
-              date: updatedBooking.date?.toISOString(),
-              time: updatedBooking.time,
-              customer: updatedBooking.customer
-            }
-          }
-        });
-      })
+  // Formata o número de WhatsApp do barbeiro, removendo qualquer caractere que não seja dígito
+  const numeroFormatado = updatedBooking.barber?.whatsapp?.replace(/\D/g, '');
+  const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
+
+  window.location.href = link;
+
+  navigate('/agendamento/sucesso', {
+    state: {
+      booking: {
+        service: updatedBooking.service,
+        barber: updatedBooking.barber,
+        date: updatedBooking.date?.toISOString(),
+        time: updatedBooking.time,
+        customer: updatedBooking.customer
+      }
+    }
+  });
+})
+
       .catch(error => {
         console.error("Erro ao salvar o agendamento:", error);
         alert("Houve um erro ao processar seu agendamento. Tente novamente.");
