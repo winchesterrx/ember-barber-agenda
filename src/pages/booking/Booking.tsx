@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/toaster';
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 import BookingSteps from '@/components/booking/BookingSteps';
-import ServiceSelection from '@/components/booking/ServiceSelection';
 import BarberSelection from '@/components/booking/BarberSelection';
 import DateSelection from '@/components/booking/DateSelection';
 import TimeSelection from '@/components/booking/TimeSelection';
@@ -13,9 +12,11 @@ import CustomerInfo from '@/components/booking/CustomerInfo';
 
 interface Service {
   id: number;
-  name: string;
-  price: number;
-  duration: number;
+  nome: string;
+  preco: number;
+  duracao: number;
+  descricao: string;
+  imagem: string;
 }
 
 interface Barber {
@@ -46,6 +47,7 @@ const Booking = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [bookingData, setBookingData] = useState<BookingData>({
     service: null,
     barber: null,
@@ -57,6 +59,12 @@ const Booking = () => {
       cpf: ''
     }
   });
+
+  useEffect(() => {
+    fetch('https://xofome.online/barbeariamagic/listar_servicos_publicos.php')
+      .then(res => res.json())
+      .then(data => setServices(data));
+  }, []);
 
   useEffect(() => {
     if (bookingData.barber && bookingData.date) {
@@ -105,19 +113,18 @@ const Booking = () => {
 
     fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         nome_cliente: updatedBooking.customer.name,
         telefone: updatedBooking.customer.whatsapp,
         cpf: updatedBooking.customer.cpf,
         data: updatedBooking.date?.toISOString().split('T')[0],
         horario: updatedBooking.time,
-        servico: updatedBooking.service?.name,
-        valor: updatedBooking.service?.price ?? 0,
+        servico: updatedBooking.service?.nome,
+        valor: updatedBooking.service?.preco ?? 0,
         barbeiro: updatedBooking.barber?.name,
-        id_barbeiro: updatedBooking.barber?.id
+        id_barbeiro: updatedBooking.barber?.id,
+        id_servico: updatedBooking.service?.id
       })
     })
       .then(response => response.json())
@@ -128,27 +135,19 @@ const Booking = () => {
         }
 
         const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
-        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.name}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
-
+        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
         const link = `https://wa.me/5517997799982?text=${encodeURIComponent(msg)}`;
         window.location.href = link;
 
-        const serializableBooking = {
-          service: {
-            name: updatedBooking.service?.name,
-            price: updatedBooking.service?.price
-          },
-          barber: {
-            name: updatedBooking.barber?.name
-          },
-          date: updatedBooking.date?.toISOString(),
-          time: updatedBooking.time,
-          customer: updatedBooking.customer
-        };
-
         navigate('/agendamento/sucesso', {
           state: {
-            booking: serializableBooking
+            booking: {
+              service: updatedBooking.service,
+              barber: updatedBooking.barber,
+              date: updatedBooking.date?.toISOString(),
+              time: updatedBooking.time,
+              customer: updatedBooking.customer
+            }
           }
         });
       })
@@ -161,7 +160,36 @@ const Booking = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <ServiceSelection onSelect={handleServiceSelect} />;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {services.map((servico) => (
+              <div
+                key={servico.id}
+                className={`cursor-pointer border p-4 rounded-xl bg-[#1f1f1f] transition duration-200 hover:border-orange-500 ${
+                  bookingData.service?.id === servico.id ? 'border-orange-500' : 'border-transparent'
+                }`}
+                onClick={() => handleServiceSelect(servico)}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-orange-500 text-lg">✂️</span>
+                  {servico.imagem && (
+                    <img
+                      src={`https://xofome.online/barbeariamagic/uploads/${servico.imagem}`}
+                      alt={servico.nome}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  )}
+                </div>
+                <h3 className="text-white font-semibold">{servico.nome}</h3>
+                <p className="text-gray-400 text-sm mb-2">{servico.descricao}</p>
+                <div className="flex justify-between text-sm text-orange-400">
+                  <span>🕒 {servico.duracao} min</span>
+                  <span>R$ {parseFloat(servico.preco.toString()).toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
       case 2:
         return <BarberSelection onSelect={handleBarberSelect} />;
       case 3:
