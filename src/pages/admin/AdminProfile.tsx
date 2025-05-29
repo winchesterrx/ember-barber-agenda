@@ -21,15 +21,20 @@ const AdminProfile = () => {
 
   useEffect(() => {
     const token = sessionStorage.getItem('barberToken');
-    const stored = sessionStorage.getItem('barberId');
-    if (!token || !stored) {
+    if (!token) {
       navigate('/admin/login');
       return;
     }
-    const id = JSON.parse(stored).id ?? stored;
-    setBarberId(Number(id));
 
-    fetch(`https://xofome.online/barbeariamagic/get_barbeiro_por_id.php?id=${id}`)
+    const barber = JSON.parse(token);
+    if (!barber || !barber.id) {
+      navigate('/admin/login');
+      return;
+    }
+
+    setBarberId(Number(barber.id));
+
+    fetch(`https://xofome.online/barbeariamagic/get_barbeiro_por_id.php?id=${barber.id}`)
       .then(res => res.json())
       .then(data => {
         setFormData(prev => ({
