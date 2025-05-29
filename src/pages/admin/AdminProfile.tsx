@@ -20,31 +20,30 @@ const AdminProfile = () => {
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('barberToken');
-    if (!token) {
+    try {
+      const token = sessionStorage.getItem('barberToken');
+      if (!token) throw new Error('Token ausente');
+
+      const barber = JSON.parse(token);
+      if (!barber?.id) throw new Error('Token inválido');
+
+      setBarberId(Number(barber.id));
+
+      fetch(`https://xofome.online/barbeariamagic/get_barbeiro_por_id.php?id=${barber.id}`)
+        .then(res => res.json())
+        .then(data => {
+          setFormData(prev => ({
+            ...prev,
+            name: data.nome,
+            whatsapp: data.whatsapp,
+            email: data.email
+          }));
+          setProfileImage(data.foto_url);
+        });
+    } catch (error) {
+      sessionStorage.removeItem('barberToken');
       navigate('/admin/login');
-      return;
     }
-
-    const barber = JSON.parse(token);
-    if (!barber || !barber.id) {
-      navigate('/admin/login');
-      return;
-    }
-
-    setBarberId(Number(barber.id));
-
-    fetch(`https://xofome.online/barbeariamagic/get_barbeiro_por_id.php?id=${barber.id}`)
-      .then(res => res.json())
-      .then(data => {
-        setFormData(prev => ({
-          ...prev,
-          name: data.nome,
-          whatsapp: data.whatsapp,
-          email: data.email
-        }));
-        setProfileImage(data.foto_url);
-      });
   }, [navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,114 +127,76 @@ const AdminProfile = () => {
     <AdminLayout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Perfil do Barbeiro</h1>
+
         <div className="bg-barber-gray rounded-lg p-6">
           {saveSuccess && (
             <div className="mb-6 p-3 bg-green-500 bg-opacity-20 border border-green-500 rounded text-green-500">
               Alterações salvas com sucesso!
             </div>
           )}
+
           {errors.general && (
             <div className="mb-6 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500">
               {errors.general}
             </div>
           )}
-          <form onSubmit={handleSubmit}>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex flex-col md:flex-row gap-8">
               <div className="flex flex-col items-center">
                 <div className="relative">
                   <div className="w-32 h-32 rounded-full overflow-hidden bg-barber-dark">
                     {profileImage ? (
-                      <img
-                        src={profileImage}
-                        alt="Foto do perfil"
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={profileImage} alt="Foto do perfil" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <User className="w-16 h-16 text-barber-light opacity-30" />
                       </div>
                     )}
                   </div>
-                  <label htmlFor="profile-image" className="absolute bottom-0 right-0 bg-barber-orange p-2 rounded-full cursor-pointer">
-                    <Camera className="w-4 h-4 text-white" />
-                    <input
-                      type="file"
-                      id="profile-image"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={() => {}}
-                    />
-                  </label>
                 </div>
-                <p className="mt-3 text-sm text-gray-400">Recomendado: 300x300px</p>
               </div>
+
               <div className="flex-1 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">
-                      Nome completo
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="input-field pl-10"
-                        placeholder="Seu nome completo"
-                      />
-                    </div>
-                    {errors.name && <p className="mt-1 text-red-500 text-sm">{errors.name}</p>}
-                  </div>
-                  <div>
-                    <label htmlFor="whatsapp" className="block text-sm font-medium mb-2">
-                      WhatsApp
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Phone className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        id="whatsapp"
-                        name="whatsapp"
-                        type="text"
-                        value={formData.whatsapp}
-                        onChange={handleWhatsAppChange}
-                        className="input-field pl-10"
-                        placeholder="(00) 00000-0000"
-                        maxLength={16}
-                      />
-                    </div>
-                    {errors.whatsapp && <p className="mt-1 text-red-500 text-sm">{errors.whatsapp}</p>}
-                  </div>
-                </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Email
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="input-field pl-10"
-                      placeholder="seu.email@exemplo.com"
-                    />
-                  </div>
+                  <label className="block text-sm font-medium mb-2">Nome</label>
+                  <input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="input-field"
+                    placeholder="Seu nome completo"
+                  />
+                  {errors.name && <p className="mt-1 text-red-500 text-sm">{errors.name}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">WhatsApp</label>
+                  <input
+                    name="whatsapp"
+                    value={formData.whatsapp}
+                    onChange={handleWhatsAppChange}
+                    className="input-field"
+                    placeholder="(00) 00000-0000"
+                  />
+                  {errors.whatsapp && <p className="mt-1 text-red-500 text-sm">{errors.whatsapp}</p>}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="input-field"
+                    placeholder="seu.email@exemplo.com"
+                  />
                   {errors.email && <p className="mt-1 text-red-500 text-sm">{errors.email}</p>}
                 </div>
               </div>
             </div>
-            <div className="mt-8 flex justify-end">
+
+            <div className="flex justify-end">
               <button
                 type="submit"
                 disabled={saving}
