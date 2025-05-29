@@ -170,9 +170,12 @@ const Booking = () => {
                   <span className="text-orange-500 text-lg">✂️</span>
                   {servico.imagem ? (
                     <img
-                      src={`https://xofome.online/barbeariamagic/uploads/${servico.imagem}`}
+                      src={`https://xofome.online/barbeariamagic/${servico.imagem}`}
                       alt={servico.nome}
                       className="w-8 h-8 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/default-avatar.png';
+                      }}
                     />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gray-700" />
