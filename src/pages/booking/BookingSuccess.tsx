@@ -1,86 +1,85 @@
-
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Send } from 'lucide-react';
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
 
 const BookingSuccess = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const [booking, setBooking] = useState(() => {
+    if (location.state?.booking) return location.state.booking;
+    const dados = localStorage.getItem('dados_agendamento');
+    return dados ? JSON.parse(dados) : null;
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [progress, setProgress] = useState(0);
- const [booking, setBooking] = useState(() => {
-  // Tenta pegar do state (navegação normal)
-  if (location.state?.booking) return location.state.booking;
-  // Se não tiver, tenta pegar do localStorage
-  const dados = localStorage.getItem('dados_agendamento');
-  return dados ? JSON.parse(dados) : null;
-});
-
-useEffect(() => {
-  if (!booking) {
-    toast({
-      title: "Erro",
-      description: "Dados de agendamento não encontrados. Inicie um novo agendamento.",
-      variant: "destructive",
-    });
-    navigate('/agendar');
-    return;
-  }
-  // Limpa o localStorage para não mostrar sempre
-  localStorage.removeItem('agendamento_sucesso');
-  localStorage.removeItem('dados_agendamento');
-  // ...
-}, [booking, navigate, toast]);
 
   useEffect(() => {
-    if (!isLoading) {
-      // Start countdown when loading is complete
+    if (!booking) return;
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(loadingTimer);
+  }, [booking]);
+
+  useEffect(() => {
+    if (!isLoading && booking) {
       const intervalId = setInterval(() => {
         setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(intervalId);
-            // Open WhatsApp automatically when countdown reaches 0
+            // Abrir WhatsApp
             window.open(getWhatsAppLink(), '_blank');
+            // Limpa o localStorage só depois de abrir o WhatsApp
+            localStorage.removeItem('agendamento_sucesso');
+            localStorage.removeItem('dados_agendamento');
             return 0;
           }
           return prev - 1;
         });
-        
-        // Update progress
         setProgress(prev => prev + 20);
       }, 1000);
-      
       return () => clearInterval(intervalId);
     }
-  }, [isLoading]);
+  }, [isLoading, booking]);
 
   // Format date for WhatsApp message
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | string | null) => {
     if (!date) return '';
     return new Date(date).toLocaleDateString('pt-BR');
   };
 
   const getWhatsAppLink = () => {
     if (!booking) return '';
-    
-    // We're using the phone number provided in the requirements
+    // Se você quiser usar o número do barbeiro cadastrado, troque aqui:
+    // const barberPhone = booking.barber?.whatsapp || "5517997799982";
     const barberPhone = "5517997799982";
-    
     const message = `Olá! Novo agendamento confirmado pelo Magic Barber:
 🧔 Cliente: ${booking.customer.name}
-✂️ Serviço: ${booking.service?.name}
+✂️ Serviço: ${booking.service?.name || booking.service?.nome}
 📅 Data: ${formatDate(booking.date)}
 ⏰ Horário: ${booking.time}
-💰 Valor: R$ ${booking.service?.price.toFixed(2)}`;
-    
+💰 Valor: R$ ${(booking.service?.price || booking.service?.preco)?.toFixed(2)}`;
     return `https://wa.me/${barberPhone}?text=${encodeURIComponent(message)}`;
   };
+
+  // Exibe mensagem amigável se não houver dados
+  if (!booking) {
+    return (
+      <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto py-12 px-4 flex items-center justify-center">
+          <div className="bg-barber-gray border border-barber-light-gray rounded-lg p-8 shadow-lg bg-opacity-90 text-center">
+            <h1 className="text-2xl font-bold mb-4">Nenhum agendamento recente encontrado.</h1>
+            <Link to="/" className="text-barber-orange underline">Voltar para o início</Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
@@ -114,11 +113,11 @@ useEffect(() => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-barber-orange font-semibold">Serviço</p>
-                    <p className="text-gray-300">{booking?.service?.name}</p>
+                    <p className="text-gray-300">{booking?.service?.name || booking?.service?.nome}</p>
                   </div>
                   <div>
                     <p className="text-barber-orange font-semibold">Valor</p>
-                    <p className="text-gray-300">R$ {booking?.service?.price?.toFixed(2)}</p>
+                    <p className="text-gray-300">R$ {(booking?.service?.price || booking?.service?.preco)?.toFixed(2)}</p>
                   </div>
                 </div>
                 
