@@ -53,12 +53,13 @@ const BookingSuccess = () => {
     // Se quiser usar o número do barbeiro cadastrado, troque aqui:
     // const barberPhone = booking.barber?.whatsapp || "5517997799982";
     const barberPhone = "5517997799982";
+    const valor = Number(booking.service?.price || booking.service?.preco || 0).toFixed(2);
     const message = `Olá! Novo agendamento confirmado pelo Magic Barber:
 🧔 Cliente: ${booking.customer.name}
 ✂️ Serviço: ${booking.service?.name || booking.service?.nome}
 📅 Data: ${formatDate(booking.date)}
 ⏰ Horário: ${booking.time}
-💰 Valor: R$ ${(booking.service?.price || booking.service?.preco)?.toFixed(2)}`;
+💰 Valor: R$ ${valor}`;
     return `https://wa.me/${barberPhone}?text=${encodeURIComponent(message)}`;
   };
 
@@ -77,6 +78,8 @@ const BookingSuccess = () => {
       </div>
     );
   }
+
+  const valorServico = Number(booking?.service?.price || booking?.service?.preco || 0).toFixed(2);
 
   return (
     <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
@@ -114,7 +117,7 @@ const BookingSuccess = () => {
                   </div>
                   <div>
                     <p className="text-barber-orange font-semibold">Valor</p>
-                    <p className="text-gray-300">R$ {(booking?.service?.price || booking?.service?.preco)?.toFixed(2)}</p>
+                    <p className="text-gray-300">R$ {valorServico}</p>
                   </div>
                 </div>
                 
