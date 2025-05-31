@@ -109,7 +109,7 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-1 sm:px-0">
         <DashboardStats />
 
         <div className="bg-barber-gray rounded-lg p-6">
