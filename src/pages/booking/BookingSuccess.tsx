@@ -14,27 +14,29 @@ const BookingSuccess = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [countdown, setCountdown] = useState(5);
   const [progress, setProgress] = useState(0);
-  const booking = location.state?.booking;
+ const [booking, setBooking] = useState(() => {
+  // Tenta pegar do state (navegação normal)
+  if (location.state?.booking) return location.state.booking;
+  // Se não tiver, tenta pegar do localStorage
+  const dados = localStorage.getItem('dados_agendamento');
+  return dados ? JSON.parse(dados) : null;
+});
 
-  useEffect(() => {
-    // If no booking data, redirect to booking page
-    if (!booking) {
-      toast({
-        title: "Erro",
-        description: "Dados de agendamento não encontrados. Inicie um novo agendamento.",
-        variant: "destructive",
-      });
-      navigate('/agendar');
-      return;
-    }
-    
-    // Simulate loading
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(loadingTimer);
-  }, [booking, navigate, toast]);
+useEffect(() => {
+  if (!booking) {
+    toast({
+      title: "Erro",
+      description: "Dados de agendamento não encontrados. Inicie um novo agendamento.",
+      variant: "destructive",
+    });
+    navigate('/agendar');
+    return;
+  }
+  // Limpa o localStorage para não mostrar sempre
+  localStorage.removeItem('agendamento_sucesso');
+  localStorage.removeItem('dados_agendamento');
+  // ...
+}, [booking, navigate, toast]);
 
   useEffect(() => {
     if (!isLoading) {
