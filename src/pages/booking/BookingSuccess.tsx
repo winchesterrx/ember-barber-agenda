@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 
 const BookingSuccess = () => {
   const location = useLocation();
-  const [booking, setBooking] = useState(() => {
+  const [booking] = useState(() => {
     if (location.state?.booking) return location.state.booking;
     const dados = localStorage.getItem('dados_agendamento');
     return dados ? JSON.parse(dados) : null;
@@ -32,9 +32,6 @@ const BookingSuccess = () => {
             clearInterval(intervalId);
             // Abrir WhatsApp
             window.open(getWhatsAppLink(), '_blank');
-            // Limpa o localStorage só depois de abrir o WhatsApp
-            localStorage.removeItem('agendamento_sucesso');
-            localStorage.removeItem('dados_agendamento');
             return 0;
           }
           return prev - 1;
@@ -53,7 +50,7 @@ const BookingSuccess = () => {
 
   const getWhatsAppLink = () => {
     if (!booking) return '';
-    // Se você quiser usar o número do barbeiro cadastrado, troque aqui:
+    // Se quiser usar o número do barbeiro cadastrado, troque aqui:
     // const barberPhone = booking.barber?.whatsapp || "5517997799982";
     const barberPhone = "5517997799982";
     const message = `Olá! Novo agendamento confirmado pelo Magic Barber:
@@ -146,6 +143,10 @@ const BookingSuccess = () => {
               <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                 <Link 
                   to="/"
+                  onClick={() => {
+                    localStorage.removeItem('agendamento_sucesso');
+                    localStorage.removeItem('dados_agendamento');
+                  }}
                   className="bg-barber-gray border border-barber-orange text-barber-orange hover:bg-barber-light-gray transition-colors px-6 py-3 rounded-md flex items-center justify-center gap-2 shadow-md btn-cancel"
                 >
                   Início
