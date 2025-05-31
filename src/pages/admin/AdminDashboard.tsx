@@ -34,8 +34,6 @@ const AdminDashboard = () => {
     }
 
     const barbeiro = JSON.parse(token);
-    console.log('ID do barbeiro logado:', barbeiro.id);
-
     const formattedDate = formatDateToYMD(currentDate);
 
     setLoading(true);
@@ -52,7 +50,6 @@ const AdminDashboard = () => {
     })
       .then(res => res.json())
       .then(data => {
-        console.log('Agendamentos recebidos:', data.agendamentos);
         if (data.success) {
           setBookings(data.agendamentos);
         } else {
@@ -61,7 +58,6 @@ const AdminDashboard = () => {
         setLoading(false);
       })
       .catch(error => {
-        console.error('Erro na requisição:', error);
         setBookings([]);
         setLoading(false);
       });
@@ -113,21 +109,22 @@ const AdminDashboard = () => {
         <DashboardStats />
 
         <div className="bg-barber-gray rounded-lg p-6">
-          <div className="flex justify-between items-center mb-6">
+          {/* Filtros de agendamento responsivos */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-3">
             <h2 className="text-xl md:text-2xl font-semibold">Agendamentos</h2>
-            <div className="flex items-center space-x-4">
-              <div className="bg-barber-dark rounded-lg flex">
+            <div className="flex items-center w-full sm:w-auto">
+              <div className="bg-barber-dark rounded-lg flex w-full sm:w-auto">
                 <button
                   onClick={() => setViewMode('day')}
-                  className={`px-4 py-2 rounded-lg text-sm ${viewMode === 'day' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${viewMode === 'day' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
                 >Dia</button>
                 <button
                   onClick={() => setViewMode('week')}
-                  className={`px-4 py-2 rounded-lg text-sm ${viewMode === 'week' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${viewMode === 'week' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
                 >Semana</button>
                 <button
                   onClick={() => setViewMode('month')}
-                  className={`px-4 py-2 rounded-lg text-sm ${viewMode === 'month' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
+                  className={`flex-1 px-4 py-2 rounded-lg text-sm ${viewMode === 'month' ? 'bg-barber-orange text-white' : 'text-gray-300'}`}
                 >Mês</button>
               </div>
             </div>
@@ -156,18 +153,18 @@ const AdminDashboard = () => {
               <div className="w-10 h-10 border-4 border-barber-orange border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : bookings.length > 0 ? (
-           <div className="grid grid-cols-1 gap-4 px-2 sm:px-0">
-  {bookings.map((booking, index) => (
-    <BookingCard key={index} booking={{
-      id: booking.id.toString(),
-      customerName: booking.nome_cliente,
-      phone: booking.telefone,
-      service: booking.servico,
-      time: booking.horario,
-      status: booking.status || 'pending'
-    }} />
-  ))}
-</div>
+            <div className="grid grid-cols-1 gap-4 px-2 sm:px-0">
+              {bookings.map((booking, index) => (
+                <BookingCard key={index} booking={{
+                  id: booking.id.toString(),
+                  customerName: booking.nome_cliente,
+                  phone: booking.telefone,
+                  service: booking.servico,
+                  time: booking.horario,
+                  status: booking.status || 'pending'
+                }} />
+              ))}
+            </div>
           ) : (
             <div className="text-center py-12 bg-barber-dark rounded-lg">
               <p className="text-gray-400">Nenhum agendamento para esta data</p>
