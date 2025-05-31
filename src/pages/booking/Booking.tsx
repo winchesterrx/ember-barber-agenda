@@ -24,6 +24,7 @@ interface Barber {
   name: string;
   photo: string;
   experience: string;
+  whatsapp?: string; // Adicione se precisar do whatsapp do barbeiro
 }
 
 interface BookingData {
@@ -134,35 +135,44 @@ const Booking = () => {
         id_servico: updatedBooking.service?.id
       })
     })
-     .then(response => response.json())
-.then(response => {
-  if (!response.success) {
-    alert(response.message || 'Erro ao salvar o agendamento.');
-    return;
-  }
+      .then(response => response.json())
+      .then(response => {
+        if (!response.success) {
+          alert(response.message || 'Erro ao salvar o agendamento.');
+          return;
+        }
 
-  const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
-  const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
+        // Salva no localStorage para a página de sucesso
+        localStorage.setItem('agendamento_sucesso', 'true');
+        localStorage.setItem('dados_agendamento', JSON.stringify({
+          service: updatedBooking.service,
+          barber: updatedBooking.barber,
+          date: updatedBooking.date,
+          time: updatedBooking.time,
+          customer: updatedBooking.customer
+        }));
 
-  // Formata o número de WhatsApp do barbeiro, removendo qualquer caractere que não seja dígito
-  const numeroFormatado = updatedBooking.barber?.whatsapp?.replace(/\D/g, '');
-  const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
+        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
+        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
 
-  window.location.href = link;
+        // Formata o número de WhatsApp do barbeiro, removendo qualquer caractere que não seja dígito
+        const numeroFormatado = updatedBooking.barber?.whatsapp?.replace(/\D/g, '');
+        const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
 
-  navigate('/agendamento/sucesso', {
-    state: {
-      booking: {
-        service: updatedBooking.service,
-        barber: updatedBooking.barber,
-        date: updatedBooking.date?.toISOString(),
-        time: updatedBooking.time,
-        customer: updatedBooking.customer
-      }
-    }
-  });
-})
+        window.location.href = link;
 
+        navigate('/agendamento/sucesso', {
+          state: {
+            booking: {
+              service: updatedBooking.service,
+              barber: updatedBooking.barber,
+              date: updatedBooking.date?.toISOString(),
+              time: updatedBooking.time,
+              customer: updatedBooking.customer
+            }
+          }
+        });
+      })
       .catch(error => {
         console.error("Erro ao salvar o agendamento:", error);
         alert("Houve um erro ao processar seu agendamento. Tente novamente.");
