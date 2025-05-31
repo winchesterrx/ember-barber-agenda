@@ -156,18 +156,18 @@ const AdminDashboard = () => {
               <div className="w-10 h-10 border-4 border-barber-orange border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : bookings.length > 0 ? (
-            <div className="grid grid-cols-1 gap-4">
-              {bookings.map((booking, index) => (
-                <BookingCard key={index} booking={{
-                  id: booking.id.toString(),
-                  customerName: booking.nome_cliente,
-                  phone: booking.telefone,
-                  service: booking.servico,
-                  time: booking.horario,
-                  status: booking.status || 'pending'
-                }} />
-              ))}
-            </div>
+           <div className="grid grid-cols-1 gap-4 px-2 sm:px-0">
+  {bookings.map((booking, index) => (
+    <BookingCard key={index} booking={{
+      id: booking.id.toString(),
+      customerName: booking.nome_cliente,
+      phone: booking.telefone,
+      service: booking.servico,
+      time: booking.horario,
+      status: booking.status || 'pending'
+    }} />
+  ))}
+</div>
           ) : (
             <div className="text-center py-12 bg-barber-dark rounded-lg">
               <p className="text-gray-400">Nenhum agendamento para esta data</p>
