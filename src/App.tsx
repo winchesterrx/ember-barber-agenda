@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSchedule from "./pages/admin/AdminSchedule";
 import AdminProfile from "./pages/admin/AdminProfile";
 import NotFound from "./pages/NotFound";
+import NewAppointment from "./pages/booking/NewAppointment"; // Novo import
 
 const queryClient = new QueryClient();
 
@@ -26,12 +26,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/agendar" element={<Booking />} />
+          <Route path="/agendamento/novo" element={<NewAppointment />} /> {/* Nova rota */}
           <Route path="/agendamento/sucesso" element={<BookingSuccess />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/horarios" element={<AdminSchedule />} />
           <Route path="/admin/perfil" element={<AdminProfile />} />
-          <Route path="/admin/servicos" element={<BarberServices />} /> {/* ✅ nova rota */}
+          <Route path="/admin/servicos" element={<BarberServices />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
