@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { AppointmentPreview } from '@/components/booking/AppointmentPreview';
+import React, { useState } from 'react';
+import AppointmentPreview from '@/components/booking/AppointmentPreview';
 
-export function NewAppointment() {
+const NewAppointment: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [appointment, setAppointment] = useState({
     clientName: 'João Silva',
@@ -44,4 +44,6 @@ export function NewAppointment() {
       />
     </div>
   );
-}
+};
+
+export default NewAppointment;
