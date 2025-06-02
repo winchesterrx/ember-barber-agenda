@@ -9,7 +9,10 @@ import BarberSelection from '@/components/booking/BarberSelection';
 import DateSelection from '@/components/booking/DateSelection';
 import TimeSelection from '@/components/booking/TimeSelection';
 import CustomerInfo from '@/components/booking/CustomerInfo';
-
+import React from 'react';
+import { useState } from 'react';
+import AppointmentPreview from '@/components/booking/AppointmentPreview';
+// ... existing code ...
 interface Service {
   id: number;
   nome: string;
