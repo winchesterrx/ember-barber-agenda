@@ -9,8 +9,10 @@ import BarberSelection from '@/components/booking/BarberSelection';
 import DateSelection from '@/components/booking/DateSelection';
 import TimeSelection from '@/components/booking/TimeSelection';
 import CustomerInfo from '@/components/booking/CustomerInfo';
+import React from 'react';
+import { useState } from 'react';
 import AppointmentPreview from '@/components/booking/AppointmentPreview';
-
+// ... existing code ...
 interface Service {
   id: number;
   nome: string;
@@ -25,7 +27,7 @@ interface Barber {
   name: string;
   photo: string;
   experience: string;
-  whatsapp?: string;
+  whatsapp?: string; // Adicione se precisar do whatsapp do barbeiro
 }
 
 interface BookingData {
@@ -50,7 +52,6 @@ const Booking = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
   const [services, setServices] = useState<Service[]>([]);
-  const [showPreview, setShowPreview] = useState(false);
   const [bookingData, setBookingData] = useState<BookingData>({
     service: null,
     barber: null,
@@ -120,69 +121,65 @@ const Booking = () => {
     };
 
     setBookingData(updatedBooking);
-    setShowPreview(true);
-  };
-
-  const handleConfirmBooking = () => {
-    setShowPreview(false);
 
     fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        nome_cliente: bookingData.customer.name,
-        telefone: bookingData.customer.whatsapp,
-        cpf: bookingData.customer.cpf,
-        data: bookingData.date?.toISOString().split('T')[0],
-        horario: bookingData.time,
-        servico: bookingData.service?.nome,
-        valor: bookingData.service?.preco ?? 0,
-        barbeiro: bookingData.barber?.name,
-        id_barbeiro: bookingData.barber?.id,
-        id_servico: bookingData.service?.id
+        nome_cliente: updatedBooking.customer.name,
+        telefone: updatedBooking.customer.whatsapp,
+        cpf: updatedBooking.customer.cpf,
+        data: updatedBooking.date?.toISOString().split('T')[0],
+        horario: updatedBooking.time,
+        servico: updatedBooking.service?.nome,
+        valor: updatedBooking.service?.preco ?? 0,
+        barbeiro: updatedBooking.barber?.name,
+        id_barbeiro: updatedBooking.barber?.id,
+        id_servico: updatedBooking.service?.id
       })
     })
-    .then(response => response.json())
-    .then(response => {
-      if (!response.success) {
-        alert(response.message || 'Erro ao salvar o agendamento.');
-        return;
-      }
-
-      // Salva no localStorage para a página de sucesso
-      localStorage.setItem('agendamento_sucesso', 'true');
-      localStorage.setItem('dados_agendamento', JSON.stringify({
-        service: bookingData.service,
-        barber: bookingData.barber,
-        date: bookingData.date,
-        time: bookingData.time,
-        customer: bookingData.customer
-      }));
-
-      const dataFormatada = bookingData.date?.toLocaleDateString('pt-BR') ?? '';
-      const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${bookingData.customer.name}\n📞 WhatsApp: ${bookingData.customer.whatsapp}\n💈 Serviço: ${bookingData.service?.nome}\n✂️ Barbeiro: ${bookingData.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${bookingData.time}`;
-
-      const numeroFormatado = bookingData.barber?.whatsapp?.replace(/\D/g, '');
-      const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
-
-      window.location.href = link;
-
-      navigate('/agendamento/sucesso', {
-        state: {
-          booking: {
-            service: bookingData.service,
-            barber: bookingData.barber,
-            date: bookingData.date?.toISOString(),
-            time: bookingData.time,
-            customer: bookingData.customer
-          }
+      .then(response => response.json())
+      .then(response => {
+        if (!response.success) {
+          alert(response.message || 'Erro ao salvar o agendamento.');
+          return;
         }
+
+        // Salva no localStorage para a página de sucesso
+        localStorage.setItem('agendamento_sucesso', 'true');
+        localStorage.setItem('dados_agendamento', JSON.stringify({
+          service: updatedBooking.service,
+          barber: updatedBooking.barber,
+          date: updatedBooking.date,
+          time: updatedBooking.time,
+          customer: updatedBooking.customer
+        }));
+
+        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
+        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
+
+        // Formata o número de WhatsApp do barbeiro, removendo qualquer caractere que não seja dígito
+        const numeroFormatado = updatedBooking.barber?.whatsapp?.replace(/\D/g, '');
+        const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
+
+        window.location.href = link;
+
+        navigate('/agendamento/sucesso', {
+          state: {
+            booking: {
+              service: updatedBooking.service,
+              barber: updatedBooking.barber,
+              date: updatedBooking.date?.toISOString(),
+              time: updatedBooking.time,
+              customer: updatedBooking.customer
+            }
+          }
+        });
+      })
+      .catch(error => {
+        console.error("Erro ao salvar o agendamento:", error);
+        alert("Houve um erro ao processar seu agendamento. Tente novamente.");
       });
-    })
-    .catch(error => {
-      console.error("Erro ao salvar o agendamento:", error);
-      alert("Houve um erro ao processar seu agendamento. Tente novamente.");
-    });
   };
 
   const renderStepContent = () => {
@@ -287,21 +284,6 @@ const Booking = () => {
             <div className="bg-gradient-to-b from-barber-gray to-barber-dark h-4 mt-6 rounded-b-lg mx-auto max-w-4xl"></div>
           )}
         </div>
-
-        <AppointmentPreview
-          isOpen={showPreview}
-          onClose={() => setShowPreview(false)}
-          onConfirm={handleConfirmBooking}
-          appointment={{
-            clientName: bookingData.customer.name,
-            service: bookingData.service?.nome || '',
-            date: bookingData.date || new Date(),
-            location: 'Unidade Centro',
-            price: bookingData.service?.preco || 0,
-            duration: bookingData.service?.duracao || 30,
-            barber: bookingData.barber?.name || ''
-          }}
-        />
       </main>
 
       <Footer />
