@@ -1,3 +1,4 @@
+import React from 'react';
 import { Clock, User, Scissors, MapPin, Calendar, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -17,12 +18,12 @@ interface AppointmentPreviewProps {
   };
 }
 
-export function AppointmentPreview({
+const AppointmentPreview: React.FC<AppointmentPreviewProps> = ({
   isOpen,
   onClose,
   onConfirm,
   appointment,
-}: AppointmentPreviewProps) {
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -136,4 +137,6 @@ export function AppointmentPreview({
       </div>
     </>
   );
-}
+};
+
+export default AppointmentPreview;
