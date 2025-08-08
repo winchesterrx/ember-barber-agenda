@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, Lock, Save, Camera, Tabs, TabsList, TabsTrigger, TabsContent } from 'lucide-react';
+import { User, Phone, Mail, Lock, Save, Camera, Gift, Settings } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Gift, Settings } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const AdminProfile = () => {
   const navigate = useNavigate();
