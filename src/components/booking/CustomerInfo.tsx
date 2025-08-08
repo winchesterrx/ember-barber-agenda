@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface CustomerInfoProps {
   onSubmit: (data: { name: string; whatsapp: string; cpf: string }) => void;
@@ -131,7 +132,18 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
   return (
     <div className="booking-step">
       <h2 className="text-2xl font-semibold mb-6">Seus dados</h2>
-      
+
+      {/* Alerta de fidelidade */}
+      <Alert className="mb-6 bg-gradient-to-r from-yellow-100 via-orange-100 to-yellow-50 border-yellow-300 shadow-md">
+        <AlertTitle className="flex items-center gap-2 text-barber-orange text-lg font-bold">
+          🎁 Programa de Fidelidade
+        </AlertTitle>
+        <AlertDescription className="text-barber-dark text-sm">
+          Para participar do nosso programa de fidelidade e acumular pontos a cada agendamento, informe seu <span className="font-semibold">CPF</span> abaixo. <br/>
+          <span className="text-barber-orange font-medium">A cada visita, você se aproxima de ganhar prêmios exclusivos!</span>
+        </AlertDescription>
+      </Alert>
+
       <form onSubmit={handleSubmit} className="bg-barber-gray border border-barber-light-gray rounded-lg p-6">
         <div className="space-y-6">
           <div>
@@ -149,7 +161,7 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
             />
             {errors.name && <p className="mt-1 text-red-500 text-sm">{errors.name}</p>}
           </div>
-          
+
           <div>
             <label htmlFor="whatsapp" className="block text-sm font-medium mb-2">
               WhatsApp *
@@ -166,10 +178,10 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
             />
             {errors.whatsapp && <p className="mt-1 text-red-500 text-sm">{errors.whatsapp}</p>}
           </div>
-          
+
           <div>
             <label htmlFor="cpf" className="block text-sm font-medium mb-2">
-              CPF (opcional)
+              CPF <span className="text-barber-orange font-semibold">*</span>
             </label>
             <input
               id="cpf"
@@ -177,13 +189,14 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
               type="text"
               value={formData.cpf}
               onChange={handleCpfChange}
-              className="input-field"
+              className="input-field border-2 border-barber-orange focus:ring-2 focus:ring-barber-orange"
               placeholder="000.000.000-00"
               maxLength={14}
+              required
             />
-            {errors.cpf && <p className="mt-1 text-red-500 text-sm">{errors.cpf}</p>}
+            {errors.cpf && <p className="mt-1 text-red-500 text-sm font-semibold">{errors.cpf}</p>}
           </div>
-          
+
           <div className="pt-4">
             <Button
               type="submit"
