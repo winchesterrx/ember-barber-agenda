@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Gift } from 'lucide-react';
 
 interface CustomerInfoProps {
   onSubmit: (data: { name: string; whatsapp: string; cpf: string }) => void;
@@ -133,15 +134,20 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
     <div className="booking-step">
       <h2 className="text-2xl font-semibold mb-6">Seus dados</h2>
 
-      {/* Alerta de fidelidade */}
-      <Alert className="mb-6 bg-gradient-to-r from-yellow-100 via-orange-100 to-yellow-50 border-yellow-300 shadow-md">
-        <AlertTitle className="flex items-center gap-2 text-barber-orange text-lg font-bold">
-          🎁 Programa de Fidelidade
-        </AlertTitle>
-        <AlertDescription className="text-barber-dark text-sm">
-          Para participar do nosso programa de fidelidade e acumular pontos a cada agendamento, informe seu <span className="font-semibold">CPF</span> abaixo. <br/>
-          <span className="text-barber-orange font-medium">A cada visita, você se aproxima de ganhar prêmios exclusivos!</span>
-        </AlertDescription>
+      {/* Alerta de fidelidade com ícone moderno e cores do tema */}
+      <Alert className="mb-6 bg-gradient-to-r from-barber-gray/80 via-barber-gray/60 to-barber-gray/40 border-l-4 border-barber-orange shadow-lg">
+        <div className="flex items-center gap-3">
+          <Gift className="w-7 h-7 text-barber-orange flex-shrink-0" />
+          <div>
+            <AlertTitle className="text-barber-orange text-lg font-bold">
+              Programa de Fidelidade
+            </AlertTitle>
+            <AlertDescription className="text-barber-light text-sm mt-1">
+              Para participar do nosso programa de fidelidade e acumular pontos a cada agendamento, informe seu <span className="font-semibold text-barber-orange">CPF</span> abaixo.<br/>
+              <span className="text-barber-orange font-medium">A cada visita, você se aproxima de ganhar prêmios exclusivos!</span>
+            </AlertDescription>
+          </div>
+        </div>
       </Alert>
 
       <form onSubmit={handleSubmit} className="bg-barber-gray border border-barber-light-gray rounded-lg p-6">
