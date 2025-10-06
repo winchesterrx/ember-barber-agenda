@@ -53,7 +53,10 @@ function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
   // const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!barbeiroId) return;
+    if (!barbeiroId) {
+      setFidelidade(null);
+      return;
+    }
     setLoading(true);
     // setErro(null);
     fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
