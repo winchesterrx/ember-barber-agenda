@@ -1,352 +1,419 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Toaster } from '@/components/ui/toaster';
+import { User, Phone, Mail, Lock, Save, Camera, Gift, Settings } from 'lucide-react';
+import AdminLayout from '@/components/admin/AdminLayout';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
-import Navbar from '@/components/shared/Navbar';
-import Footer from '@/components/shared/Footer';
-import BookingSteps from '@/components/booking/BookingSteps';
-import BarberSelection from '@/components/booking/BarberSelection';
-import DateSelection from '@/components/booking/DateSelection';
-import TimeSelection from '@/components/booking/TimeSelection';
-import CustomerInfo from '@/components/booking/CustomerInfo';
-import AppointmentPreview from '@/components/booking/AppointmentPreview';
-
-interface Service {
-  id: number;
-  nome: string;
-  preco: number;
-  duracao: number;
-  descricao: string;
-  imagem: string;
-}
-
-interface Barber {
-  id: number;
-  name: string;
-  photo: string;
-  experience: string;
-  whatsapp?: string;
-}
-
-interface BookingData {
-  service: Service | null;
-  barber: Barber | null;
-  date: Date | null;
-  time: string | null;
-  customer: {
-    name: string;
-    whatsapp: string;
-    cpf: string;
-  };
-}
-
-interface TimeSlot {
-  horario: string;
-  disponivel: boolean;
-}
-
-// Componente para mostrar a mensagem de fidelidade
-function MensagemFidelidade({ barbeiroId, onChangeAtivo, onCarregado }: { barbeiroId: number, onChangeAtivo?: (ativo: boolean) => void, onCarregado?: () => void }) {
-  // ... estados ...
-  useEffect(() => {
-    if (!barbeiroId) {
-      setFidelidade(null);
-      onChangeAtivo && onChangeAtivo(false);
-      onCarregado && onCarregado();
-      return;
-    }
-    setLoading(true);
-    fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (
-          data.success &&
-          data.data &&
-          String(data.data.ativo).trim() === '1'
-        ) {
-          setFidelidade(data.data);
-          onChangeAtivo && onChangeAtivo(true);
-        } else {
-          setFidelidade(null);
-          onChangeAtivo && onChangeAtivo(false);
-        }
-        setLoading(false);
-        onCarregado && onCarregado();
-      })
-      .catch(() => {
-        setFidelidade(null);
-        setLoading(false);
-        onChangeAtivo && onChangeAtivo(false);
-        onCarregado && onCarregado();
-      });
-  }, [barbeiroId, onChangeAtivo, onCarregado]);
-
-  if (loading || !fidelidade) return null;
-
-  return (
-    <div className="bg-barber-orange bg-opacity-20 border-l-4 border-barber-orange p-4 rounded mb-4 text-barber-orange font-medium">
-      {fidelidade.tipo_regra === 'cortes'
-        ? `Programa de Fidelidade: A cada ${fidelidade.cortes_necessarios} cortes, ganha 1 corte grátis!`
-        : `Programa de Fidelidade: A cada R$${fidelidade.valor_necessario} em serviços, ganha 1 corte grátis!`}
-    </div>
-  );
-}
-
-const Booking = () => {
+const AdminProfile = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [bookingData, setBookingData] = useState<BookingData>({
-    service: null,
-    barber: null,
-    date: null,
-    time: null,
-    customer: {
-      name: '',
-      whatsapp: '',
-      cpf: ''
-    }
+  const [formData, setFormData] = useState({
+    name: 'Marcio Silva',
+    whatsapp: '(11) 99999-9999',
+    email: 'admin@example.com',
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
-  const [fidelidadeAtiva, setFidelidadeAtiva] = useState(false);
-
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>('https://images.unsplash.com/photo-1581092795360-fd1ca04f0952');
+  
   useEffect(() => {
-    fetch('https://xofome.online/barbeariamagic/listar_servicos_publicos.php')
-      .then(res => res.json())
-      .then(data => setServices(data))
-      .catch(err => console.error('Erro ao buscar serviços:', err));
-  }, []);
-
-  useEffect(() => {
-    if (bookingData.barber && bookingData.date) {
-      const dayOfWeek = bookingData.date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
-      const dateStr = bookingData.date.toISOString().split('T')[0];
-
-      fetch(`https://xofome.online/barbeariamagic/horarios_disponiveis_filtrados.php?id_barbeiro=${bookingData.barber.id}&dia_semana=${dayOfWeek}&data=${dateStr}`)
-        .then(res => res.json())
-        .then(data => {
-          const agora = new Date();
-          const isToday = bookingData.date?.toDateString() === agora.toDateString();
-          const horariosFiltrados = data.filter((slot: TimeSlot) => {
-            if (!isToday) return true;
-            const [h, m, s] = slot.horario.split(':');
-            const slotDate = new Date();
-            slotDate.setHours(Number(h), Number(m), Number(s));
-            return slotDate > agora;
-          });
-          setAvailableTimes(horariosFiltrados);
-        })
-        .catch(() => setAvailableTimes([]));
+    // Check if user is authenticated
+    const token = sessionStorage.getItem('barberToken');
+    if (!token) {
+      navigate('/admin/login');
     }
-  }, [bookingData.barber, bookingData.date]);
+  }, [navigate]);
 
-  const handleServiceSelect = (service: Service) => {
-    setBookingData(prev => ({ ...prev, service }));
-    setCurrentStep(2);
-  };
-
-  const handleBarberSelect = (barber: Barber) => {
-    setBookingData(prev => ({ ...prev, barber }));
-    setCurrentStep(3);
-  };
-
-  const handleDateSelect = (date: Date) => {
-    setBookingData(prev => ({ ...prev, date }));
-    setCurrentStep(4);
-  };
-
-  const handleTimeSelect = (time: string) => {
-    setBookingData(prev => ({ ...prev, time }));
-    setCurrentStep(5);
-  };
-
-  const handleCustomerSubmit = (customerData: { name: string; whatsapp: string; cpf: string }) => {
-    const updatedBooking: BookingData = {
-      ...bookingData,
-      customer: customerData
-    };
-
-    const [fidelidadeAtiva, setFidelidadeAtiva] = useState(false);
-    const [fidelidadeCarregada, setFidelidadeCarregada] = useState(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
     
-    setBookingData(updatedBooking);
-
-    fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        nome_cliente: updatedBooking.customer.name,
-        telefone: updatedBooking.customer.whatsapp,
-        cpf: updatedBooking.customer.cpf,
-        data: updatedBooking.date?.toISOString().split('T')[0],
-        horario: updatedBooking.time,
-        servico: updatedBooking.service?.nome,
-        valor: updatedBooking.service?.preco ?? 0,
-        barbeiro: updatedBooking.barber?.name,
-        id_barbeiro: updatedBooking.barber?.id,
-        id_servico: updatedBooking.service?.id
-      })
-    })
-      .then(response => response.json())
-      .then(response => {
-        if (!response.success) {
-          alert(response.message || 'Erro ao salvar o agendamento.');
-          return;
-        }
-
-        // Salva no localStorage para a página de sucesso
-        localStorage.setItem('agendamento_sucesso', 'true');
-        localStorage.setItem('dados_agendamento', JSON.stringify({
-          service: updatedBooking.service,
-          barber: updatedBooking.barber,
-          date: updatedBooking.date,
-          time: updatedBooking.time,
-          customer: updatedBooking.customer
-        }));
-
-        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
-        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
-
-        // Formata o número de WhatsApp do barbeiro, removendo qualquer caractere que não seja dígito
-        const numeroFormatado = updatedBooking.barber?.whatsapp?.replace(/\D/g, '');
-        const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
-
-        window.location.href = link;
-
-        navigate('/agendamento/sucesso', {
-          state: {
-            booking: {
-              service: updatedBooking.service,
-              barber: updatedBooking.barber,
-              date: updatedBooking.date?.toISOString(),
-              time: updatedBooking.time,
-              customer: updatedBooking.customer
-            }
-          }
-        });
-      })
-      .catch(error => {
-        console.error("Erro ao salvar o agendamento:", error);
-        alert("Houve um erro ao processar seu agendamento. Tente novamente.");
-      });
+    // Clear error when typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
-
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {services.map((servico) => (
-              <div
-                key={servico.id}
-                className={`cursor-pointer border p-4 rounded-xl bg-[#1f1f1f] transition duration-200 hover:border-orange-500 ${
-                  bookingData.service?.id === servico.id ? 'border-orange-500' : 'border-transparent'
-                }`}
-                onClick={() => handleServiceSelect(servico)}
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-orange-500 text-lg">✂️</span>
-                  {servico.imagem ? (
-                    <img
-                      src={`https://xofome.online/barbeariamagic/${servico.imagem}`}
-                      alt={servico.nome}
-                      className="w-8 h-8 rounded-full object-cover"
-                      onError={(e) => {
-                        e.currentTarget.src = '/images/default-avatar.png';
-                      }}
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-700" />
-                  )}
-                </div>
-                <h3 className="text-white font-semibold">{servico.nome}</h3>
-                <p className="text-gray-400 text-sm mb-2">{servico.descricao}</p>
-                <div className="flex justify-between text-sm text-orange-400">
-                  <span>🕒 {servico.duracao} min</span>
-                  <span>R$ {parseFloat(servico.preco.toString()).toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      case 2:
-        return <BarberSelection onSelect={handleBarberSelect} />;
-      case 3:
-        return <DateSelection onSelect={handleDateSelect} />;
-      case 4:
-        return (
-          <TimeSelection
-            onSelect={handleTimeSelect}
-            availableTimes={availableTimes}
-            serviceId={bookingData.service?.id || 0}
-            barberId={bookingData.barber?.id || 0}
-            date={bookingData.date}
-          />
-        );
-      case 5:
-        return <CustomerInfo onSubmit={handleCustomerSubmit} fidelidadeAtiva={fidelidadeAtiva} />;
-      default:
-        return null;
+  
+  const formatWhatsApp = (value: string) => {
+    // Remove all non-digit characters
+    let digits = value.replace(/\D/g, '');
+    
+    // Format the phone number
+    if (digits.length <= 2) {
+      return digits;
+    } else if (digits.length <= 6) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    } else if (digits.length <= 10) {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+    } else {
+      return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
     }
   };
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+  const handleWhatsAppChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatWhatsApp(e.target.value);
+    setFormData(prev => ({ ...prev, whatsapp: formattedValue }));
+    
+    if (errors.whatsapp) {
+      setErrors(prev => ({ ...prev, whatsapp: '' }));
+    }
+  };
+  
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfileImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const validateForm = () => {
+    let valid = true;
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Nome é obrigatório';
+      valid = false;
+    }
+    
+    const whatsappDigits = formData.whatsapp.replace(/\D/g, '');
+    if (!whatsappDigits) {
+      newErrors.whatsapp = 'WhatsApp é obrigatório';
+      valid = false;
+    } else if (whatsappDigits.length < 10 || whatsappDigits.length > 11) {
+      newErrors.whatsapp = 'WhatsApp inválido';
+      valid = false;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email) {
+      newErrors.email = 'Email é obrigatório';
+      valid = false;
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = 'Email inválido';
+      valid = false;
+    }
+    
+    // Only validate password fields if any of them is filled
+    if (formData.currentPassword || formData.newPassword || formData.confirmPassword) {
+      if (!formData.currentPassword) {
+        newErrors.currentPassword = 'Senha atual é obrigatória';
+        valid = false;
+      }
+      
+      if (!formData.newPassword) {
+        newErrors.newPassword = 'Nova senha é obrigatória';
+        valid = false;
+      } else if (formData.newPassword.length < 6) {
+        newErrors.newPassword = 'Nova senha deve ter pelo menos 6 caracteres';
+        valid = false;
+      }
+      
+      if (!formData.confirmPassword) {
+        newErrors.confirmPassword = 'Confirme a nova senha';
+        valid = false;
+      } else if (formData.newPassword !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'As senhas não coincidem';
+        valid = false;
+      }
+    }
+    
+    setErrors(newErrors);
+    return valid;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setSaving(true);
+    
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSaveSuccess(true);
+      
+      // Reset password fields
+      setFormData(prev => ({
+        ...prev,
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      }));
+      
+      // Clear the success message after a few seconds
+      setTimeout(() => {
+        setSaveSuccess(false);
+      }, 3000);
+    } catch (error) {
+      setErrors(prev => ({ ...prev, general: 'Erro ao salvar as alterações. Tente novamente.' }));
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-barber-dark text-barber-light flex flex-col">
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-[-1]"
-        style={{ backgroundImage: "url('/images/barber-shop-interior.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-black bg-opacity-70"></div>
+    <AdminLayout>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Perfil do Barbeiro</h1>
+        <Tabs defaultValue="perfil" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="perfil" className="flex items-center gap-2"><Settings className="w-4 h-4" />Perfil</TabsTrigger>
+            <TabsTrigger value="fidelidade" className="flex items-center gap-2"><Gift className="w-4 h-4 text-barber-orange" />Fidelidade</TabsTrigger>
+          </TabsList>
+          <TabsContent value="perfil">
+            {/* Conteúdo do perfil original */}
+            <div className="bg-barber-gray rounded-lg p-6">
+              {saveSuccess && (
+                <div className="mb-6 p-3 bg-green-500 bg-opacity-20 border border-green-500 rounded text-green-500">
+                  Alterações salvas com sucesso!
+                </div>
+              )}
+              {errors.general && (
+                <div className="mb-6 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500">
+                  {errors.general}
+                </div>
+              )}
+              
+              <form onSubmit={handleSubmit}>
+                <div className="flex flex-col md:flex-row gap-8">
+                  {/* Profile image */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <div className="w-32 h-32 rounded-full overflow-hidden bg-barber-dark">
+                        {profileImage ? (
+                          <img
+                            src={profileImage}
+                            alt="Foto do perfil"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <User className="w-16 h-16 text-barber-light opacity-30" />
+                          </div>
+                        )}
+                      </div>
+                      <label htmlFor="profile-image" className="absolute bottom-0 right-0 bg-barber-orange p-2 rounded-full cursor-pointer">
+                        <Camera className="w-4 h-4 text-white" />
+                        <input
+                          type="file"
+                          id="profile-image"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          name="profile_image"
+                        />
+                      </label>
+                    </div>
+                    <p className="mt-3 text-sm text-gray-400">Recomendado: 300x300px</p>
+                  </div>
+                  
+                  {/* Form fields */}
+                  <div className="flex-1 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium mb-2">
+                          Nome completo
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <User className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <input
+                            id="name"
+                            name="name"
+                            type="text"
+                            value={formData.name}
+                            onChange={handleChange}
+                            className="input-field pl-10"
+                            placeholder="Seu nome completo"
+                          />
+                        </div>
+                        {errors.name && <p className="mt-1 text-red-500 text-sm">{errors.name}</p>}
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="whatsapp" className="block text-sm font-medium mb-2">
+                          WhatsApp
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Phone className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <input
+                            id="whatsapp"
+                            name="whatsapp"
+                            type="text"
+                            value={formData.whatsapp}
+                            onChange={handleWhatsAppChange}
+                            className="input-field pl-10"
+                            placeholder="(00) 00000-0000"
+                            maxLength={16}
+                          />
+                        </div>
+                        {errors.whatsapp && <p className="mt-1 text-red-500 text-sm">{errors.whatsapp}</p>}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium mb-2">
+                        Email
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Mail className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          className="input-field pl-10"
+                          placeholder="seu.email@exemplo.com"
+                        />
+                      </div>
+                      {errors.email && <p className="mt-1 text-red-500 text-sm">{errors.email}</p>}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-10">
+                  <h3 className="text-lg font-semibold mb-4">Alterar Senha</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label htmlFor="currentPassword" className="block text-sm font-medium mb-2">
+                        Senha atual
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Lock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="currentPassword"
+                          name="currentPassword"
+                          type="password"
+                          value={formData.currentPassword}
+                          onChange={handleChange}
+                          className="input-field pl-10"
+                          placeholder="••••••"
+                        />
+                      </div>
+                      {errors.currentPassword && <p className="mt-1 text-red-500 text-sm">{errors.currentPassword}</p>}
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="newPassword" className="block text-sm font-medium mb-2">
+                        Nova senha
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Lock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="newPassword"
+                          name="newPassword"
+                          type="password"
+                          value={formData.newPassword}
+                          onChange={handleChange}
+                          className="input-field pl-10"
+                          placeholder="••••••"
+                        />
+                      </div>
+                      {errors.newPassword && <p className="mt-1 text-red-500 text-sm">{errors.newPassword}</p>}
+                    </div>
+                    
+                    <div>
+                      <label htmlFor="confirmPassword" className="block text-sm font-medium mb-2">
+                        Confirmar senha
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <Lock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          id="confirmPassword"
+                          name="confirmPassword"
+                          type="password"
+                          value={formData.confirmPassword}
+                          onChange={handleChange}
+                          className="input-field pl-10"
+                          placeholder="••••••"
+                        />
+                      </div>
+                      {errors.confirmPassword && <p className="mt-1 text-red-500 text-sm">{errors.confirmPassword}</p>}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-8 flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-3 rounded-md flex items-center gap-2"
+                  >
+                    {saving ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Salvar Alterações
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </TabsContent>
+          <TabsContent value="fidelidade">
+            <div className="bg-barber-gray rounded-lg p-6 max-w-xl mx-auto">
+              <h3 className="text-xl font-semibold mb-4 flex items-center gap-2"><Gift className="w-5 h-5 text-barber-orange" />Programa de Fidelidade</h3>
+              <form className="space-y-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" className="accent-barber-orange w-5 h-5" />
+                    <span className="text-barber-light font-medium">Ativar programa de fidelidade</span>
+                  </label>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-barber-light font-medium mb-2">Regra de pontuação</label>
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="regra" value="cortes" className="accent-barber-orange" defaultChecked />
+                      <span className="text-barber-light">A cada</span>
+                      <input type="number" min="1" defaultValue={10} className="w-16 px-2 py-1 rounded border border-barber-light-gray bg-barber-dark text-barber-light" />
+                      <span className="text-barber-light">cortes, ganha 1 corte grátis</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" name="regra" value="valor" className="accent-barber-orange" />
+                      <span className="text-barber-light">A cada R$</span>
+                      <input type="number" min="1" step="1" defaultValue={200} className="w-20 px-2 py-1 rounded border border-barber-light-gray bg-barber-dark text-barber-light" />
+                      <span className="text-barber-light">em serviços, ganha 1 corte grátis</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <button type="button" className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-2 rounded-md font-medium flex items-center gap-2">
+                    <Save className="w-4 h-4" />Salvar Configuração
+                  </button>
+                </div>
+              </form>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-
-      <Navbar />
-
-      <main className="flex-grow container mx-auto py-8 px-4">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Agendar Serviço</h1>
-
-        <BookingSteps currentStep={currentStep} />
-
-        <div className="mt-8 max-w-4xl mx-auto">
-          <div className="bg-barber-gray bg-opacity-90 rounded-lg p-6 shadow-lg border border-barber-light-gray">
-            {/* Mensagem de fidelidade só aparece se o barbeiro foi selecionado e o programa está ativo */}
-            {bookingData.barber && (
-     <MensagemFidelidade
-       barbeiroId={bookingData.barber.id}
-       onChangeAtivo={setFidelidadeAtiva}
-       onCarregado={() => setFidelidadeCarregada(true)}
-     />
-   )}
-            {renderStepContent()}
-
-            {currentStep > 1 && (
-              <div className="mt-8 flex justify-start">
-                <button
-                  type="button"
-                  onClick={handleBack}
-                  className="text-barber-orange hover:underline hover:text-opacity-90 transition-colors btn-back"
-                >
-                  ← Voltar para etapa anterior
-                </button>
-              </div>
-            )}
-          </div>
-
-          {currentStep < 5 && (
-            <div className="bg-gradient-to-b from-barber-gray to-barber-dark h-4 mt-6 rounded-b-lg mx-auto max-w-4xl"></div>
-          )}
-        </div>
-      </main>
-
-      <Footer />
-      <Toaster />
-    </div>
+    </AdminLayout>
   );
 };
 
-export default Booking;
+export default AdminProfile;
