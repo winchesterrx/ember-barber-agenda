@@ -8,9 +8,10 @@ import { Gift } from 'lucide-react';
 
 interface CustomerInfoProps {
   onSubmit: (data: { name: string; whatsapp: string; cpf: string }) => void;
+  fidelidadeAtiva?: boolean;
 }
 
-const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
+const CustomerInfo = ({ onSubmit, fidelidadeAtiva }: CustomerInfoProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -134,21 +135,23 @@ const CustomerInfo = ({ onSubmit }: CustomerInfoProps) => {
     <div className="booking-step">
       <h2 className="text-2xl font-semibold mb-6">Seus dados</h2>
 
-      {/* Alerta de fidelidade com ícone moderno e cores do tema */}
-      <Alert className="mb-6 bg-gradient-to-r from-barber-gray/80 via-barber-gray/60 to-barber-gray/40 border-l-4 border-barber-orange shadow-lg">
-        <div className="flex items-center gap-3">
-          <Gift className="w-7 h-7 text-barber-orange flex-shrink-0" />
-          <div>
-            <AlertTitle className="text-barber-orange text-lg font-bold">
-              Programa de Fidelidade
-            </AlertTitle>
-            <AlertDescription className="text-barber-light text-sm mt-1">
-              Para participar do nosso programa de fidelidade e acumular pontos a cada agendamento, informe seu <span className="font-semibold text-barber-orange">CPF</span> abaixo.<br/>
-              <span className="text-barber-orange font-medium">A cada visita, você se aproxima de ganhar prêmios exclusivos!</span>
-            </AlertDescription>
+      {/* Alerta de fidelidade só aparece se fidelidadeAtiva for true */}
+      {fidelidadeAtiva && (
+        <Alert className="mb-6 bg-gradient-to-r from-barber-gray/80 via-barber-gray/60 to-barber-gray/40 border-l-4 border-barber-orange shadow-lg">
+          <div className="flex items-center gap-3">
+            <Gift className="w-7 h-7 text-barber-orange flex-shrink-0" />
+            <div>
+              <AlertTitle className="text-barber-orange text-lg font-bold">
+                Programa de Fidelidade
+              </AlertTitle>
+              <AlertDescription className="text-barber-light text-sm mt-1">
+                Para participar do nosso programa de fidelidade e acumular pontos a cada agendamento, informe seu <span className="font-semibold text-barber-orange">CPF</span> abaixo.<br/>
+                <span className="text-barber-orange font-medium">A cada visita, você se aproxima de ganhar prêmios exclusivos!</span>
+              </AlertDescription>
+            </div>
           </div>
-        </div>
-      </Alert>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-barber-gray border border-barber-light-gray rounded-lg p-6">
         <div className="space-y-6">
