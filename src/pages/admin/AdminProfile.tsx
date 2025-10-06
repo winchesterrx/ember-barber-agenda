@@ -1,8 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, Lock, Save, Camera, Gift, Settings } from 'lucide-react';
+import { User, Phone, Mail, Lock, Save, Camera, Tabs, TabsList, TabsTrigger, TabsContent, Gift, Settings } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const AdminProfile = () => {
   const navigate = useNavigate();
@@ -19,6 +19,16 @@ const AdminProfile = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>('https://images.unsplash.com/photo-1581092795360-fd1ca04f0952');
   
+  // ESTADO PARA FIDELIDADE
+  const [fidelidade, setFidelidade] = useState({
+    ativo: false,
+    tipo_regra: 'cortes',
+    cortes_necessarios: 10,
+    valor_necessario: 200,
+  });
+  const [fidelidadeLoading, setFidelidadeLoading] = useState(false);
+  const [fidelidadeMsg, setFidelidadeMsg] = useState('');
+
   useEffect(() => {
     // Check if user is authenticated
     const token = sessionStorage.getItem('barberToken');
@@ -26,6 +36,56 @@ const AdminProfile = () => {
       navigate('/admin/login');
     }
   }, [navigate]);
+
+  // BUSCAR CONFIGURAÇÃO DE FIDELIDADE AO ABRIR
+  useEffect(() => {
+    async function fetchFidelidade() {
+      setFidelidadeLoading(true);
+      try {
+        const res = await fetch('https://SEUDOMINIO.com/buscar_fidelidade.php?barbeiro_id=1');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setFidelidade({
+            ativo: data.data.ativo === 1 || data.data.ativo === '1',
+            tipo_regra: data.data.tipo_regra,
+            cortes_necessarios: Number(data.data.cortes_necessarios),
+            valor_necessario: Number(data.data.valor_necessario),
+          });
+        }
+      } catch (e) {
+        setFidelidadeMsg('Erro ao buscar configuração de fidelidade');
+      }
+      setFidelidadeLoading(false);
+    }
+    fetchFidelidade();
+  }, []);
+
+  // SALVAR CONFIGURAÇÃO DE FIDELIDADE
+  const handleSalvarFidelidade = async () => {
+    setFidelidadeLoading(true);
+    setFidelidadeMsg('');
+    try {
+      const formData = new FormData();
+      formData.append('barbeiro_id', '1'); // Troque pelo ID real do barbeiro logado
+      formData.append('ativo', fidelidade.ativo ? '1' : '0');
+      formData.append('tipo_regra', fidelidade.tipo_regra);
+      formData.append('cortes_necessarios', String(fidelidade.cortes_necessarios));
+      formData.append('valor_necessario', String(fidelidade.valor_necessario));
+      const res = await fetch('https://SEUDOMINIO.com/salvar_fidelidade.php', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFidelidadeMsg('Configuração salva com sucesso!');
+      } else {
+        setFidelidadeMsg('Erro ao salvar configuração');
+      }
+    } catch (e) {
+      setFidelidadeMsg('Erro ao salvar configuração');
+    }
+    setFidelidadeLoading(false);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -157,6 +217,11 @@ const AdminProfile = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  // Handler para submit do form de fidelidade
+  const handleFidelidadeForm = (e: React.FormEvent) => {
+    e.preventDefault();
   };
 
   return (
@@ -378,10 +443,16 @@ const AdminProfile = () => {
           <TabsContent value="fidelidade">
             <div className="bg-barber-gray rounded-lg p-6 max-w-xl mx-auto">
               <h3 className="text-xl font-semibold mb-4 flex items-center gap-2"><Gift className="w-5 h-5 text-barber-orange" />Programa de Fidelidade</h3>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleFidelidadeForm}>
                 <div className="flex items-center gap-4 mb-4">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="accent-barber-orange w-5 h-5" />
+                    <input
+                      type="checkbox"
+                      className="accent-barber-orange w-5 h-5"
+                      checked={fidelidade.ativo}
+                      onChange={e => setFidelidade(f => ({ ...f, ativo: e.target.checked }))}
+                      disabled={fidelidadeLoading}
+                    />
                     <span className="text-barber-light font-medium">Ativar programa de fidelidade</span>
                   </label>
                 </div>
@@ -389,24 +460,61 @@ const AdminProfile = () => {
                   <label className="block text-barber-light font-medium mb-2">Regra de pontuação</label>
                   <div className="flex flex-col gap-2">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="regra" value="cortes" className="accent-barber-orange" defaultChecked />
+                      <input
+                        type="radio"
+                        name="regra"
+                        value="cortes"
+                        className="accent-barber-orange"
+                        checked={fidelidade.tipo_regra === 'cortes'}
+                        onChange={() => setFidelidade(f => ({ ...f, tipo_regra: 'cortes' }))}
+                        disabled={fidelidadeLoading}
+                      />
                       <span className="text-barber-light">A cada</span>
-                      <input type="number" min="1" defaultValue={10} className="w-16 px-2 py-1 rounded border border-barber-light-gray bg-barber-dark text-barber-light" />
+                      <input
+                        type="number"
+                        min="1"
+                        value={fidelidade.cortes_necessarios}
+                        onChange={e => setFidelidade(f => ({ ...f, cortes_necessarios: Number(e.target.value) }))}
+                        className="w-16 px-2 py-1 rounded border border-barber-light-gray bg-barber-dark text-barber-light"
+                        disabled={fidelidade.tipo_regra !== 'cortes' || fidelidadeLoading}
+                      />
                       <span className="text-barber-light">cortes, ganha 1 corte grátis</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" name="regra" value="valor" className="accent-barber-orange" />
+                      <input
+                        type="radio"
+                        name="regra"
+                        value="valor"
+                        className="accent-barber-orange"
+                        checked={fidelidade.tipo_regra === 'valor'}
+                        onChange={() => setFidelidade(f => ({ ...f, tipo_regra: 'valor' }))}
+                        disabled={fidelidadeLoading}
+                      />
                       <span className="text-barber-light">A cada R$</span>
-                      <input type="number" min="1" step="1" defaultValue={200} className="w-20 px-2 py-1 rounded border border-barber-light-gray bg-barber-dark text-barber-light" />
+                      <input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={fidelidade.valor_necessario}
+                        onChange={e => setFidelidade(f => ({ ...f, valor_necessario: Number(e.target.value) }))}
+                        className="w-20 px-2 py-1 rounded border border-barber-light-gray bg-barber-dark text-barber-light"
+                        disabled={fidelidade.tipo_regra !== 'valor' || fidelidadeLoading}
+                      />
                       <span className="text-barber-light">em serviços, ganha 1 corte grátis</span>
                     </label>
                   </div>
                 </div>
                 <div className="flex justify-end">
-                  <button type="button" className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-2 rounded-md font-medium flex items-center gap-2">
-                    <Save className="w-4 h-4" />Salvar Configuração
+                  <button
+                    type="button"
+                    className="bg-barber-orange hover:bg-opacity-90 transition-colors text-white px-6 py-2 rounded-md font-medium flex items-center gap-2"
+                    onClick={handleSalvarFidelidade}
+                    disabled={fidelidadeLoading}
+                  >
+                    <Save className="w-4 h-4" />{fidelidadeLoading ? 'Salvando...' : 'Salvar Configuração'}
                   </button>
                 </div>
+                {fidelidadeMsg && <div className="text-sm mt-2 text-barber-light">{fidelidadeMsg}</div>}
               </form>
             </div>
           </TabsContent>
