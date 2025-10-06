@@ -43,7 +43,7 @@ const AdminProfile = () => {
     async function fetchFidelidade() {
       setFidelidadeLoading(true);
       try {
-        const res = await fetch('https://SEUDOMINIO.com/buscar_fidelidade.php?barbeiro_id=1');
+        const res = await fetch('https://xofome.online/barbeariamagic//buscar_fidelidade.php?barbeiro_id=1');
         const data = await res.json();
         if (data.success && data.data) {
           setFidelidade({
@@ -72,7 +72,7 @@ const AdminProfile = () => {
       formData.append('tipo_regra', fidelidade.tipo_regra);
       formData.append('cortes_necessarios', String(fidelidade.cortes_necessarios));
       formData.append('valor_necessario', String(fidelidade.valor_necessario));
-      const res = await fetch('https://SEUDOMINIO.com/salvar_fidelidade.php', {
+      const res = await fetch('https://xofome.online/barbeariamagic/salvar_fidelidade.php', {
         method: 'POST',
         body: formData,
       });
