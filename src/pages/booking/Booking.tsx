@@ -46,19 +46,16 @@ interface TimeSlot {
 }
 
 // Componente para mostrar a mensagem de fidelidade
-function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
-  const [fidelidade, setFidelidade] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  // Estado para debug opcional
-  // const [erro, setErro] = useState<string | null>(null);
-
+function MensagemFidelidade({ barbeiroId, onChangeAtivo, onCarregado }: { barbeiroId: number, onChangeAtivo?: (ativo: boolean) => void, onCarregado?: () => void }) {
+  // ... estados ...
   useEffect(() => {
     if (!barbeiroId) {
       setFidelidade(null);
+      onChangeAtivo && onChangeAtivo(false);
+      onCarregado && onCarregado();
       return;
     }
     setLoading(true);
-    // setErro(null);
     fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
       .then(res => res.json())
       .then(data => {
@@ -68,17 +65,21 @@ function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
           String(data.data.ativo).trim() === '1'
         ) {
           setFidelidade(data.data);
+          onChangeAtivo && onChangeAtivo(true);
         } else {
           setFidelidade(null);
+          onChangeAtivo && onChangeAtivo(false);
         }
         setLoading(false);
+        onCarregado && onCarregado();
       })
-      .catch((e) => {
+      .catch(() => {
         setFidelidade(null);
         setLoading(false);
-        // setErro('Erro ao buscar configuração de fidelidade'); // só para debug
+        onChangeAtivo && onChangeAtivo(false);
+        onCarregado && onCarregado();
       });
-  }, [barbeiroId]);
+  }, [barbeiroId, onChangeAtivo, onCarregado]);
 
   if (loading || !fidelidade) return null;
 
@@ -107,6 +108,7 @@ const Booking = () => {
       cpf: ''
     }
   });
+  const [fidelidadeAtiva, setFidelidadeAtiva] = useState(false);
 
   useEffect(() => {
     fetch('https://xofome.online/barbeariamagic/listar_servicos_publicos.php')
@@ -164,6 +166,9 @@ const Booking = () => {
       customer: customerData
     };
 
+    const [fidelidadeAtiva, setFidelidadeAtiva] = useState(false);
+    const [fidelidadeCarregada, setFidelidadeCarregada] = useState(false);
+    
     setBookingData(updatedBooking);
 
     fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
@@ -279,7 +284,7 @@ const Booking = () => {
           />
         );
       case 5:
-        return <CustomerInfo onSubmit={handleCustomerSubmit} />;
+        return <CustomerInfo onSubmit={handleCustomerSubmit} fidelidadeAtiva={fidelidadeAtiva} />;
       default:
         return null;
     }
@@ -311,8 +316,12 @@ const Booking = () => {
           <div className="bg-barber-gray bg-opacity-90 rounded-lg p-6 shadow-lg border border-barber-light-gray">
             {/* Mensagem de fidelidade só aparece se o barbeiro foi selecionado e o programa está ativo */}
             {bookingData.barber && (
-              <MensagemFidelidade barbeiroId={bookingData.barber.id} />
-            )}
+     <MensagemFidelidade
+       barbeiroId={bookingData.barber.id}
+       onChangeAtivo={setFidelidadeAtiva}
+       onCarregado={() => setFidelidadeCarregada(true)}
+     />
+   )}
             {renderStepContent()}
 
             {currentStep > 1 && (
