@@ -9,10 +9,8 @@ import BarberSelection from '@/components/booking/BarberSelection';
 import DateSelection from '@/components/booking/DateSelection';
 import TimeSelection from '@/components/booking/TimeSelection';
 import CustomerInfo from '@/components/booking/CustomerInfo';
-import React from 'react';
-import { useState } from 'react';
 import AppointmentPreview from '@/components/booking/AppointmentPreview';
-// ... existing code ...
+
 interface Service {
   id: number;
   nome: string;
@@ -27,7 +25,7 @@ interface Barber {
   name: string;
   photo: string;
   experience: string;
-  whatsapp?: string; // Adicione se precisar do whatsapp do barbeiro
+  whatsapp?: string;
 }
 
 interface BookingData {
@@ -45,6 +43,41 @@ interface BookingData {
 interface TimeSlot {
   horario: string;
   disponivel: boolean;
+}
+
+// Componente para mostrar a mensagem de fidelidade
+function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
+  const [fidelidade, setFidelidade] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!barbeiroId) return;
+    setLoading(true);
+    fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.data && (data.data.ativo === 1 || data.data.ativo === '1')) {
+          setFidelidade(data.data);
+        } else {
+          setFidelidade(null);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setFidelidade(null);
+        setLoading(false);
+      });
+  }, [barbeiroId]);
+
+  if (loading || !fidelidade) return null;
+
+  return (
+    <div className="bg-barber-orange bg-opacity-20 border-l-4 border-barber-orange p-4 rounded mb-4 text-barber-orange font-medium">
+      {fidelidade.tipo_regra === 'cortes'
+        ? `Programa de Fidelidade: A cada ${fidelidade.cortes_necessarios} cortes, ganha 1 corte grátis!`
+        : `Programa de Fidelidade: A cada R$${fidelidade.valor_necessario} em serviços, ganha 1 corte grátis!`}
+    </div>
+  );
 }
 
 const Booking = () => {
@@ -265,6 +298,10 @@ const Booking = () => {
 
         <div className="mt-8 max-w-4xl mx-auto">
           <div className="bg-barber-gray bg-opacity-90 rounded-lg p-6 shadow-lg border border-barber-light-gray">
+            {/* Mensagem de fidelidade só aparece se o barbeiro foi selecionado e o programa está ativo */}
+            {bookingData.barber && (
+              <MensagemFidelidade barbeiroId={bookingData.barber.id} />
+            )}
             {renderStepContent()}
 
             {currentStep > 1 && (
