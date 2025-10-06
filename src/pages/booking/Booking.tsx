@@ -1,21 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 
 import Navbar from '@/components/shared/Navbar';
 import Footer from '@/components/shared/Footer';
 import BookingSteps from '@/components/booking/BookingSteps';
-import ServiceSelection from '@/components/booking/ServiceSelection';
 import BarberSelection from '@/components/booking/BarberSelection';
 import DateSelection from '@/components/booking/DateSelection';
 import TimeSelection from '@/components/booking/TimeSelection';
 import CustomerInfo from '@/components/booking/CustomerInfo';
-
+import React from 'react';
+import { useState } from 'react';
+import AppointmentPreview from '@/components/booking/AppointmentPreview';
+// ... existing code ...
 interface Service {
   id: number;
-  name: string;
-  price: number;
-  duration: number;
+  nome: string;
+  preco: number;
+  duracao: number;
+  descricao: string;
+  imagem: string;
 }
 
 interface Barber {
@@ -23,6 +27,7 @@ interface Barber {
   name: string;
   photo: string;
   experience: string;
+  whatsapp?: string; // Adicione se precisar do whatsapp do barbeiro
 }
 
 interface BookingData {
@@ -37,44 +42,16 @@ interface BookingData {
   };
 }
 
-// Componente para mostrar a mensagem de fidelidade
-function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
-  const [fidelidade, setFidelidade] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!barbeiroId) return;
-    setLoading(true);
-    fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data && (data.data.ativo === 1 || data.data.ativo === '1')) {
-          setFidelidade(data.data);
-        } else {
-          setFidelidade(null);
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setFidelidade(null);
-        setLoading(false);
-      });
-  }, [barbeiroId]);
-
-  if (loading || !fidelidade) return null;
-
-  return (
-    <div className="bg-barber-orange bg-opacity-20 border-l-4 border-barber-orange p-4 rounded mb-4 text-barber-orange font-medium">
-      {fidelidade.tipo_regra === 'cortes'
-        ? `Programa de Fidelidade: A cada ${fidelidade.cortes_necessarios} cortes, ganha 1 corte grátis!`
-        : `Programa de Fidelidade: A cada R$${fidelidade.valor_necessario} em serviços, ganha 1 corte grátis!`}
-    </div>
-  );
+interface TimeSlot {
+  horario: string;
+  disponivel: boolean;
 }
 
 const Booking = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [bookingData, setBookingData] = useState<BookingData>({
     service: null,
     barber: null,
@@ -86,6 +63,36 @@ const Booking = () => {
       cpf: ''
     }
   });
+
+  useEffect(() => {
+    fetch('https://xofome.online/barbeariamagic/listar_servicos_publicos.php')
+      .then(res => res.json())
+      .then(data => setServices(data))
+      .catch(err => console.error('Erro ao buscar serviços:', err));
+  }, []);
+
+  useEffect(() => {
+    if (bookingData.barber && bookingData.date) {
+      const dayOfWeek = bookingData.date.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+      const dateStr = bookingData.date.toISOString().split('T')[0];
+
+      fetch(`https://xofome.online/barbeariamagic/horarios_disponiveis_filtrados.php?id_barbeiro=${bookingData.barber.id}&dia_semana=${dayOfWeek}&data=${dateStr}`)
+        .then(res => res.json())
+        .then(data => {
+          const agora = new Date();
+          const isToday = bookingData.date?.toDateString() === agora.toDateString();
+          const horariosFiltrados = data.filter((slot: TimeSlot) => {
+            if (!isToday) return true;
+            const [h, m, s] = slot.horario.split(':');
+            const slotDate = new Date();
+            slotDate.setHours(Number(h), Number(m), Number(s));
+            return slotDate > agora;
+          });
+          setAvailableTimes(horariosFiltrados);
+        })
+        .catch(() => setAvailableTimes([]));
+    }
+  }, [bookingData.barber, bookingData.date]);
 
   const handleServiceSelect = (service: Service) => {
     setBookingData(prev => ({ ...prev, service }));
@@ -117,45 +124,55 @@ const Booking = () => {
 
     fetch('https://xofome.online/barbeariamagic/salvar_agendamento.php', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        customer: updatedBooking.customer,
-        service: {
-          name: updatedBooking.service?.name
-        },
-        barber: {
-          name: updatedBooking.barber?.name
-        },
-        date: updatedBooking.date?.toISOString(),
-        time: updatedBooking.time
+        nome_cliente: updatedBooking.customer.name,
+        telefone: updatedBooking.customer.whatsapp,
+        cpf: updatedBooking.customer.cpf,
+        data: updatedBooking.date?.toISOString().split('T')[0],
+        horario: updatedBooking.time,
+        servico: updatedBooking.service?.nome,
+        valor: updatedBooking.service?.preco ?? 0,
+        barbeiro: updatedBooking.barber?.name,
+        id_barbeiro: updatedBooking.barber?.id,
+        id_servico: updatedBooking.service?.id
       })
     })
       .then(response => response.json())
-      .then(() => {
-        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
-        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.name}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
+      .then(response => {
+        if (!response.success) {
+          alert(response.message || 'Erro ao salvar o agendamento.');
+          return;
+        }
 
-        const link = `https://wa.me/5517997799982?text=${encodeURIComponent(msg)}`;
-        window.location.href = link;
-
-        const serializableBooking = {
-          service: {
-            name: updatedBooking.service?.name,
-            price: updatedBooking.service?.price
-          },
-          barber: {
-            name: updatedBooking.barber?.name
-          },
-          date: updatedBooking.date?.toISOString(),
+        // Salva no localStorage para a página de sucesso
+        localStorage.setItem('agendamento_sucesso', 'true');
+        localStorage.setItem('dados_agendamento', JSON.stringify({
+          service: updatedBooking.service,
+          barber: updatedBooking.barber,
+          date: updatedBooking.date,
           time: updatedBooking.time,
           customer: updatedBooking.customer
-        };
+        }));
+
+        const dataFormatada = updatedBooking.date?.toLocaleDateString('pt-BR') ?? '';
+        const msg = `Novo agendamento confirmado! ✂️\n\n👤 Cliente: ${updatedBooking.customer.name}\n📞 WhatsApp: ${updatedBooking.customer.whatsapp}\n💈 Serviço: ${updatedBooking.service?.nome}\n✂️ Barbeiro: ${updatedBooking.barber?.name}\n📅 Data: ${dataFormatada}\n⏰ Horário: ${updatedBooking.time}`;
+
+        // Formata o número de WhatsApp do barbeiro, removendo qualquer caractere que não seja dígito
+        const numeroFormatado = updatedBooking.barber?.whatsapp?.replace(/\D/g, '');
+        const link = `https://wa.me/55${numeroFormatado}?text=${encodeURIComponent(msg)}`;
+
+        window.location.href = link;
 
         navigate('/agendamento/sucesso', {
           state: {
-            booking: serializableBooking
+            booking: {
+              service: updatedBooking.service,
+              barber: updatedBooking.barber,
+              date: updatedBooking.date?.toISOString(),
+              time: updatedBooking.time,
+              customer: updatedBooking.customer
+            }
           }
         });
       })
@@ -168,7 +185,41 @@ const Booking = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <ServiceSelection onSelect={handleServiceSelect} />;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {services.map((servico) => (
+              <div
+                key={servico.id}
+                className={`cursor-pointer border p-4 rounded-xl bg-[#1f1f1f] transition duration-200 hover:border-orange-500 ${
+                  bookingData.service?.id === servico.id ? 'border-orange-500' : 'border-transparent'
+                }`}
+                onClick={() => handleServiceSelect(servico)}
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-orange-500 text-lg">✂️</span>
+                  {servico.imagem ? (
+                    <img
+                      src={`https://xofome.online/barbeariamagic/${servico.imagem}`}
+                      alt={servico.nome}
+                      className="w-8 h-8 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/default-avatar.png';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-700" />
+                  )}
+                </div>
+                <h3 className="text-white font-semibold">{servico.nome}</h3>
+                <p className="text-gray-400 text-sm mb-2">{servico.descricao}</p>
+                <div className="flex justify-between text-sm text-orange-400">
+                  <span>🕒 {servico.duracao} min</span>
+                  <span>R$ {parseFloat(servico.preco.toString()).toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
       case 2:
         return <BarberSelection onSelect={handleBarberSelect} />;
       case 3:
@@ -177,6 +228,7 @@ const Booking = () => {
         return (
           <TimeSelection
             onSelect={handleTimeSelect}
+            availableTimes={availableTimes}
             serviceId={bookingData.service?.id || 0}
             barberId={bookingData.barber?.id || 0}
             date={bookingData.date}
@@ -213,10 +265,6 @@ const Booking = () => {
 
         <div className="mt-8 max-w-4xl mx-auto">
           <div className="bg-barber-gray bg-opacity-90 rounded-lg p-6 shadow-lg border border-barber-light-gray">
-            {/* Mensagem de fidelidade só aparece se o barbeiro foi selecionado e o programa está ativo */}
-            {bookingData.barber && (
-              <MensagemFidelidade barbeiroId={bookingData.barber.id} />
-            )}
             {renderStepContent()}
 
             {currentStep > 1 && (
