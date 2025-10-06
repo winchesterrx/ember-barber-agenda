@@ -56,7 +56,12 @@ function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
     fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.data && (data.data.ativo === 1 || data.data.ativo === '1')) {
+        // Checagem reforçada: só mostra se ativo for exatamente '1' (string) após trim
+        if (
+          data.success &&
+          data.data &&
+          String(data.data.ativo).trim() === '1'
+        ) {
           setFidelidade(data.data);
         } else {
           setFidelidade(null);
