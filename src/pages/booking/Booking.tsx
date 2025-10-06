@@ -49,14 +49,16 @@ interface TimeSlot {
 function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
   const [fidelidade, setFidelidade] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  // Estado para debug opcional
+  // const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
     if (!barbeiroId) return;
     setLoading(true);
+    // setErro(null);
     fetch(`https://xofome.online/barbeariamagic/buscar_fidelidade.php?barbeiro_id=${barbeiroId}`)
       .then(res => res.json())
       .then(data => {
-        // Checagem reforçada: só mostra se ativo for exatamente '1' (string) após trim
         if (
           data.success &&
           data.data &&
@@ -68,9 +70,10 @@ function MensagemFidelidade({ barbeiroId }: { barbeiroId: number }) {
         }
         setLoading(false);
       })
-      .catch(() => {
+      .catch((e) => {
         setFidelidade(null);
         setLoading(false);
+        // setErro('Erro ao buscar configuração de fidelidade'); // só para debug
       });
   }, [barbeiroId]);
 
